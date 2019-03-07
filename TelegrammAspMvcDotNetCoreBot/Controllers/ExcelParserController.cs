@@ -4,7 +4,6 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Excel = Microsoft.Office.Interop.Excel;
 using TelegrammAspMvcDotNetCoreBot.Controllers;
 using System.IO.Packaging;
 using TelegrammAspMvcDotNetCoreBot.Models;
@@ -25,7 +24,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			ScheduleController.Unit();
 
 			ScheduleController.AddUniversity("мисис");
-			ScheduleController.AddFaculty("мисис", FileName);
+			ScheduleController.AddFacility("мисис", FileName);
 
 			HSSFWorkbook hssfwb;
 			using (FileStream file = new FileStream(@"" + FileName + ".xls", FileMode.Open, FileAccess.Read))
@@ -139,7 +138,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			ScheduleController.Unit();
 
 			ScheduleController.AddUniversity("мисис");
-			ScheduleController.AddFaculty("мисис", FileName);
+			ScheduleController.AddFacility("мисис", FileName);
 
 
 			XSSFWorkbook hssfwb;

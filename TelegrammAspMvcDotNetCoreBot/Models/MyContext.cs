@@ -16,12 +16,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 		}
 
 		public DbSet<University> Universities { get; set; }
-		public DbSet<Faculty> Faculties { get; set; }
+		public DbSet<Facility> Facilities { get; set; }
 		public DbSet<Course> Courses { get; set; }
 		public DbSet<Group> Groups { get; set; }
 		public DbSet<ScheduleWeek> ScheduleWeeks { get; set; }
 		public DbSet<ScheduleDay> ScheduleDays { get; set; }
 		public DbSet<Lesson> Lessons { get; set; }
 		public DbSet<HomeWork> HomeWorks { get; set; }
+	    public DbSet<User> Users { get; set; }
 	}
 }

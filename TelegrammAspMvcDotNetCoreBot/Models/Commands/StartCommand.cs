@@ -22,26 +22,34 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
         public override async Task Execute(Message message, TelegramBotClient botClient)
 		{
-			ScheduleController.Unit();
-			List<string> un = ScheduleController.GetUniversities();
-			
-			string[][] unn = new string[un.ToList().Count][];
-			
-			int count = 0;
-			foreach (string item in un)
-			{
-				unn[count] = new string[] { item };
-				count++;
-			}
+            ScheduleController.Unit();
+            List<string> un = ScheduleController.GetUniversities();
 
-			var chatId = message.Chat.Id;
+            string[][] unn = new string[un.ToList().Count][];
 
-			if (!UserController.CheckUser(chatId))
-				UserController.CreateUser(chatId);
-			else
-				UserController.RecreateUser(chatId);
-			//await botClient.SendTextMessageAsync(chatId, "Hallo I'm ASP.NET Core Bot and I made by Mr.Robot", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
-			await botClient.SendTextMessageAsync(chatId, "Привет, выбери свой университет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup) KeybordController.GetKeyboard(unn, count));
-		}
+            int count = 0;
+            foreach (string item in un)
+            {
+                unn[count] = new string[] { item };
+                count++;
+            }
+
+            var chatId = message.Chat.Id;
+
+            UserDb userDb = new UserDb();
+
+            if (!userDb.CheckUser(chatId))
+                userDb.CreateUser(chatId);
+            else
+                userDb.RecreateUser(chatId);
+
+            //await botClient.SendTextMessageAsync(chatId, "Hallo I'm ASP.NET Core Bot and I made by Mr.Robot", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+            await botClient.SendTextMessageAsync(chatId, "Привет, выбери свой университет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
+
+            //var chatId = message.Chat.Id;
+            //var messageId = message.MessageId;
+
+            //await botClient.SendTextMessageAsync(chatId, "Hello!", replyToMessageId: messageId);
+        }
 	}
 }
