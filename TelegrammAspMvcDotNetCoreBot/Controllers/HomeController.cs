@@ -32,6 +32,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             //ViewBag.n = result;
 
             //new UserDb().CheckUser(565656433);
+            //new UserDb().EditUser(259762827, "facility", "ИТАСУ");
+            string a = new UserDb().CheckUserElements(358243561, "facility");
+           bool b = new ScheduleController().IsFacilityExist(new UserDb().CheckUserElements(358243561, "university"), "ИТАСУ");
+
             return View();
         }
 

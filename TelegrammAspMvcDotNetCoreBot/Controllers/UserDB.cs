@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         public UserDb()
         {
             var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-            optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+            optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
             //optionsBuilder.UseSqlServer("Server=vladafon.ru;Database=schedule-bot;User Id=sa;Password=Pizza2135;");
             Db = new MyContext(optionsBuilder.Options);
         }
@@ -20,7 +21,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
         public void CreateUser(long UserId)
         {
-          
+          if (CheckUser(UserId)) return;
             User user = new User
             {
                 TelegramId = UserId
@@ -40,7 +41,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
         public void RecreateUser(long UserId)
         {
-            Db.Users.Remove(new User { TelegramId = UserId});
+            if (!CheckUser(UserId)) return;
+            User user = Db.Users.FirstOrDefault(n => n.TelegramId == UserId);
+            Db.Users.Remove(user);
             Db.SaveChanges();
             CreateUser(UserId);
         }
@@ -51,39 +54,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             switch (type)
             {
                 case "university":
-                    University university = new University
-                    {
-                        Id = Db.Universities.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    University university = Db.Universities.FirstOrDefault(n => n.Name == param);
                     user.University = university;
                     Db.Users.Update(user);
                     break;
                 case "facility":
-                    Facility facility = new Facility()
-                    {
-                        Id = Db.Facilities.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    Facility facility = Db.Facilities.FirstOrDefault(n => n.Name == param);
                     user.Facility = facility;
                     Db.Users.Update(user);
                     break;
                 case "course":
-                    Course course = new Course
-                    {
-                        Id = Db.Courses.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    Course course = Db.Courses.FirstOrDefault(n => n.Name == param);
                     user.Course = course;
                     Db.Users.Update(user);
                     break;
                 case "group":
-                    Group group = new Group
-                    {
-                        Id = Db.Groups.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    Group group = Db.Groups.FirstOrDefault(n => n.Name == param);
                     user.Group = group;
+                    Db.Users.Update(user);
                     break;
             }
 
@@ -96,16 +84,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             switch (type)
             {
                 case "university":
-                    if (user != null) return user.University.Name;
+                    if (user.University != null) return user.University.Name;
                     break;
                 case "facility":
-                    if (user != null) return user.Facility.Name;
+                    if (user.Facility != null) return user.Facility.Name;
                     break;
                 case "course":
-                    if (user != null) return user.Course.Name;
+                    if (user.Course != null) return user.Course.Name;
                     break;
                 case "group":
-                    if (user != null) return user.Group.Name;
+                    if (user.Group != null) return user.Group.Name;
                     break;
             }
             return "";

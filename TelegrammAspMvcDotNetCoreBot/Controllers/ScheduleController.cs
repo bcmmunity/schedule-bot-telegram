@@ -12,25 +12,23 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
 {
-	public static class ScheduleController
+	public class ScheduleController
 	{
-	   
-		//static DbContextOptionsBuilder<MyContext> optionsBuilder = new DbContextOptionsBuilder<MyContext>().UseSqlite("Server=(localdb)\\mssqllocaldb;Database=mobilesdb;Trusted_Connection=True;");
+	    public ScheduleController()
+	    {
+	        var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
+	        optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+	        //optionsBuilder.UseSqlServer("Server=vladafon.ru;Database=schedule-bot;User Id=sa;Password=Pizza2135;");
+	        Db = new MyContext(optionsBuilder.Options);
+	    }
+        //static DbContextOptionsBuilder<MyContext> optionsBuilder = new DbContextOptionsBuilder<MyContext>().UseSqlite("Server=(localdb)\\mssqllocaldb;Database=mobilesdb;Trusted_Connection=True;");
 
-		//public MyContext db = HttpContext.RequestServices.GetService<MyContext>();
+        //public MyContext db = HttpContext.RequestServices.GetService<MyContext>();
 
-		public static MyContext Db;
+        public static MyContext Db;
 		//private static MyContext db = new MyContext(optionsBuilder.Options);
-		
-		public static void Unit()
-		{
-			var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-		    optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
-           //optionsBuilder.UseSqlServer("Server=vladafon.ru;Database=schedule-bot;User Id=sa;Password=Pizza2135;");
-			Db = new MyContext(optionsBuilder.Options);
-		}
-
-		public static void AddUniversity(string name)
+			
+		public void AddUniversity(string name)
 		{
 
 			//MyContext dbContext = new MyContext(optionsBuilder.Options);
@@ -46,7 +44,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			}
 		}
 
-		public static void AddFacility(string university, string name)
+		public void AddFacility(string university, string name)
 		{
 			if (!IsFacilityExist(university, name))
 			{
@@ -59,7 +57,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			}
 		}
 
-		public static void AddCourse(string university, string facility, string name)
+		public void AddCourse(string university, string facility, string name)
 		{
 			if (!IsCourseExist(university, facility, name))
 			{
@@ -72,7 +70,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			}
 		}
 
-		public static void AddGroup(string university, string facility, string course, string name)
+		public void AddGroup(string university, string facility, string course, string name)
 		{
 			if (!IsGroupExist(university, facility, course, name))
 			{
@@ -87,7 +85,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 
 
-		public static void AddScheduleWeek(string university, string facility, string course, string group, ScheduleWeek week)
+		public void AddScheduleWeek(string university, string facility, string course, string group, ScheduleWeek week)
 		{
 			week.Group = Db.Groups.Where(c => c.Course == Db.Courses.Where(ll => ll.Facility == Db.Facilities.Where(n => n.University == Db.Universities.Where(m => m.Name == university).FirstOrDefault()).Where(x => x.Name == facility).FirstOrDefault()).Where(x => x.Name == course).FirstOrDefault()).Where(v => v.Name == group).FirstOrDefault();
 			Db.ScheduleWeeks.Add(week);
@@ -96,7 +94,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		
 
 
-		public static bool IsUniversityExist(string university)
+		public bool IsUniversityExist(string university)
 		{
             University universitym = Db.Universities.FirstOrDefault(m => m.Name == university);
 
@@ -108,7 +106,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static bool IsFacilityExist(string university, string facility)
+		public bool IsFacilityExist(string university, string facility)
 		{
 			University universitym = Db.Universities.Where(m => m.Name == university).FirstOrDefault();
 
@@ -122,7 +120,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static bool IsCourseExist(string university, string facility, string course)
+		public bool IsCourseExist(string university, string facility, string course)
 		{
 			University universitym = Db.Universities.Where(m => m.Name == university).FirstOrDefault();
 
@@ -138,7 +136,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static bool IsGroupExist(string university, string facility, string course, string group)
+		public bool IsGroupExist(string university, string facility, string course, string group)
 		{
 			University universitym = Db.Universities.Where(m => m.Name == university).FirstOrDefault();
 
@@ -158,7 +156,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 
 
-		public static List<string> GetUniversities()
+		public List<string> GetUniversities()
 		{
 			List<string> result = new List<string>();
 			List<University> source = Db.Universities.ToList();
@@ -171,7 +169,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static List<string> GetFacilities(string university)
+		public List<string> GetFacilities(string university)
 		{
 			List<string> result = new List<string>();
 
@@ -187,7 +185,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static List<string> GetCourses(string university, string facility)
+		public List<string> GetCourses(string university, string facility)
 		{
 			University universitym = Db.Universities.Where(m => m.Name == university).FirstOrDefault();
 			Facility facultym = Db.Facilities.Where(l => l.University == universitym).Where(t => t.Name == facility).FirstOrDefault();
@@ -203,7 +201,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static List<string> GetGroups(string university, string facility, string course)
+		public List<string> GetGroups(string university, string facility, string course)
 		{
 			University universitym = Db.Universities.Where(m => m.Name == university).FirstOrDefault();
 			Facility facultym = Db.Facilities.Where(l => l.University == universitym).Where(t => t.Name == facility).FirstOrDefault();
@@ -220,7 +218,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 			return result;
 		}
 
-		public static ScheduleDay GetSchedule(string university, string facility, string course, string group, int week, int day)
+		public ScheduleDay GetSchedule(string university, string facility, string course, string group, int week, int day)
 		{
 			University universitym = Db.Universities.Where(m => m.Name == university).FirstOrDefault();
 
