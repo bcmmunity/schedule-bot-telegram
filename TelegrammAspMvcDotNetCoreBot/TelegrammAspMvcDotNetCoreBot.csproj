@@ -12,7 +12,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Office.Interop.Excel" Version="15.0.4795.1000" />
     <PackageReference Include="NPOI.Core.Extension" Version="1.0.0" />
     <PackageReference Include="SharpZipLib" Version="1.0.0" />
     <PackageReference Include="Telegram.Bot" Version="13.4.0" />

@@ -24,7 +24,7 @@ namespace TelegrammAspMvcDotNetCoreBot
 			//thread.IsBackground = true;
 			//thread.Name = "Function";
 			//thread.Start();
-			ScheduleUpdateController.Update();
+			//ScheduleUpdateController.Update();
 		}
 
         public IConfiguration Configuration { get; }
@@ -63,7 +63,7 @@ namespace TelegrammAspMvcDotNetCoreBot
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            //Bot Configurations
+            //Bot Configuration
             Bot.GetBotClientAsync().Wait();
         }
     }

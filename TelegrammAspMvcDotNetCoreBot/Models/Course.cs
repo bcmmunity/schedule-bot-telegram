@@ -9,6 +9,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 	{
 		public int Id { get; set; }
 		public string Name { get; set; }
-		public Faculty Facultie { get; set; }
+		public Facility Facility { get; set; }
 	}
 }

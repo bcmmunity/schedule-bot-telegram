@@ -21,17 +21,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 		public IActionResult Index()
         {
-			//ScheduleDay schedule = ScheduleController.GetSchedule("мисис", "ИТАСУ", "1", "БИВТ-18-1 1 подгруппа", 1, 3);
+            //ScheduleDay schedule = ScheduleController.GetSchedule("мисис", "ИТАСУ", "1", "БИВТ-18-1 1 подгруппа", 1, 3);
 
-			//List<Lesson> listPar = schedule.Lesson;
-			//sstring result = "";
-			//foreach (Lesson item in ScheduleController.GetSchedule("мисис", "ИТАСУ", "1", "БИВТ-18-1 1 подгруппа", 1, 3).Lesson)
-			//{
-			//	result += item.Time + "\n" + item.Name + "\n" + item.Room + "\n\n";
-			//}
-			//ViewBag.n = result;
+            //List<Lesson> listPar = schedule.Lesson;
+            //sstring result = "";
+            //foreach (Lesson item in ScheduleController.GetSchedule("мисис", "ИТАСУ", "1", "БИВТ-18-1 1 подгруппа", 1, 3).Lesson)
+            //{
+            //	result += item.Time + "\n" + item.Name + "\n" + item.Room + "\n\n";
+            //}
+            //ViewBag.n = result;
 
-			return View();
+            //new UserDb().CheckUser(565656433);
+            return View();
         }
 
         public IActionResult Error()
