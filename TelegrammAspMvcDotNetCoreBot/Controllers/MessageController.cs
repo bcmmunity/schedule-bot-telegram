@@ -126,8 +126,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		        else if (message.Text == "Сегодня" && userDb.CheckUserElements(message.Chat.Id, "group") != "")
 		        {
 		            int day;
-		            int weekNum = (CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) % 2 + 1;
-		            if ((int)DateTime.Now.DayOfWeek == 0)
+		            int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                if ((int)DateTime.Now.DayOfWeek == 0)
 		                day = 7;
 		            else
 		            {
@@ -154,8 +154,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		        else if (message.Text == "Завтра" && userDb.CheckUserElements(message.Chat.Id, "group") != "")
 		        {
 		            int day;
-		            int weekNum = (CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) % 2 + 1;
-		            if ((int)DateTime.Now.DayOfWeek == 0)
+		            int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                if ((int)DateTime.Now.DayOfWeek == 0)
 		                day = 1;
 		            else
 		            {

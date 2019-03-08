@@ -17,7 +17,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 	    public ScheduleController()
 	    {
 	        var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-	        optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+	        optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
 	        //optionsBuilder.UseSqlServer("Server=vladafon.ru;Database=schedule-bot;User Id=sa;Password=Pizza2135;");
 	        Db = new MyContext(optionsBuilder.Options);
 	    }

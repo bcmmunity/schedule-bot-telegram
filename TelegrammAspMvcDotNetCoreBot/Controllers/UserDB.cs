@@ -3,6 +3,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
+using NPOI.HSSF.Record.Chart;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
@@ -12,7 +13,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         public UserDb()
         {
             var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-            optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+            optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
             //optionsBuilder.UseSqlServer("Server=vladafon.ru;Database=schedule-bot;User Id=sa;Password=Pizza2135;");
             Db = new MyContext(optionsBuilder.Options);
         }
@@ -82,16 +83,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             switch (type)
             {
                 case "university":
-                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University.Name;
+                    if (Db.Users.Include(y => y.University).FirstOrDefault(n => n.TelegramId == UserId).University != null) return Db.Users.Include(y => y.University).FirstOrDefault(n => n.TelegramId == UserId).University.Name;
                     break;
                 case "facility":
-                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Facility != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Facility.Name;
+                    if (Db.Users.Include(y => y.Facility).FirstOrDefault(n => n.TelegramId == UserId).Facility != null) return Db.Users.Include(y => y.Facility).FirstOrDefault(n => n.TelegramId == UserId).Facility.Name;
                     break;
                 case "course":
-                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Course != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Course.Name;
+                    if (Db.Users.Include(y => y.Course).FirstOrDefault(n => n.TelegramId == UserId).Course != null) return Db.Users.Include(y => y.Course).FirstOrDefault(n => n.TelegramId == UserId).Course.Name;
                     break;
                 case "group":
-                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Group != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Group.Name;
+                    if (Db.Users.Include(y => y.Group).FirstOrDefault(n => n.TelegramId == UserId).Group != null) return Db.Users.Include(y => y.Group).FirstOrDefault(n => n.TelegramId == UserId).Group.Name;
                     break;
             }
             return "";
