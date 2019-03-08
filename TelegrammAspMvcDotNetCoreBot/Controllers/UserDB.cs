@@ -54,8 +54,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             switch (type)
             {
                 case "university":
-                    University university = Db.Universities.FirstOrDefault(n => n.Name == param);
-                    user.University = university;
+                    Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University = Db.Universities.FirstOrDefault(n => n.Name == param);
                     Db.Users.Update(user);
                     break;
                 case "facility":
@@ -79,21 +78,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         }
         public string CheckUserElements(long UserId, string type)
         {
-            User user = Db.Users.FirstOrDefault(n => n.TelegramId == UserId);
 
             switch (type)
             {
                 case "university":
-                    if (user.University != null) return user.University.Name;
+                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University.Name;
                     break;
                 case "facility":
-                    if (user.Facility != null) return user.Facility.Name;
+                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Facility != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Facility.Name;
                     break;
                 case "course":
-                    if (user.Course != null) return user.Course.Name;
+                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Course != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Course.Name;
                     break;
                 case "group":
-                    if (user.Group != null) return user.Group.Name;
+                    if (Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Group != null) return Db.Users.FirstOrDefault(n => n.TelegramId == UserId).Group.Name;
                     break;
             }
             return "";
