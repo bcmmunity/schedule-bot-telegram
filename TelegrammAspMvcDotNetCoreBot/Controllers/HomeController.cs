@@ -32,6 +32,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             //ViewBag.n = result;
 
             //new UserDb().CheckUser(565656433);
+            //new UserDb().EditUser(259762827, "facility", "ИТАСУ");
+            string a = new UserDb().CheckUserElements(358243561, "facility");
+            new UserDb().EditUser(358243561, "university", "мисис");
+
+           bool b = new ScheduleController().IsFacilityExist(new UserDb().CheckUserElements(358243561, "university"), "ИТАСУ");
+
+            //var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
+            //optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+            ////optionsBuilder.UseSqlServer("Server=vladafon.ru;Database=schedule-bot;User Id=sa;Password=Pizza2135;");
+            //MyContext Db = new MyContext(optionsBuilder.Options);
+            //string a = Db.Users.FirstOrDefault(n => n.TelegramId == 358243561).University.Name;
+
             return View();
         }
 

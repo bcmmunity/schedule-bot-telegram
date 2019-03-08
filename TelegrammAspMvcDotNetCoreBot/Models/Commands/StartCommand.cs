@@ -10,6 +10,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 {
     public class StartCommand : Command
     {
+        private FileToSend _uniSticker = new FileToSend("CAADAgADCAADi6p7DL84SgdFjxAg");
+
         public override string Name => @"/start";
 
         public override bool Contains(Message message)
@@ -22,8 +24,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
         public override async Task Execute(Message message, TelegramBotClient botClient)
 		{
-            ScheduleController.Unit();
-            List<string> un = ScheduleController.GetUniversities();
+            List<string> un = new ScheduleController().GetUniversities();
 
             string[][] unn = new string[un.ToList().Count][];
 
@@ -45,11 +46,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
             //await botClient.SendTextMessageAsync(chatId, "Hallo I'm ASP.NET Core Bot and I made by Mr.Robot", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
             await botClient.SendTextMessageAsync(chatId, "Привет, выбери свой университет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
+		   // await botClient.SendStickerAsync(message.Chat.Id, _uniSticker, replyMarkup: KeybordController.GetKeyboard(unn, count));
+		    //var chatId = message.Chat.Id;
+		    //var messageId = message.MessageId;
 
-            //var chatId = message.Chat.Id;
-            //var messageId = message.MessageId;
-
-            //await botClient.SendTextMessageAsync(chatId, "Hello!", replyToMessageId: messageId);
-        }
+		    //await botClient.SendTextMessageAsync(chatId, "Hello!", replyToMessageId: messageId);
+		}
 	}
 }
