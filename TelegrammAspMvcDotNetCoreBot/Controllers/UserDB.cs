@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore;
+using NPOI.HSSF.Record.Chart;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
@@ -20,7 +22,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
         public void CreateUser(long UserId)
         {
-          
+          if (CheckUser(UserId)) return;
             User user = new User
             {
                 TelegramId = UserId
@@ -40,7 +42,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
         public void RecreateUser(long UserId)
         {
-            Db.Users.Remove(new User { TelegramId = UserId});
+            if (!CheckUser(UserId)) return;
+            User user = Db.Users.FirstOrDefault(n => n.TelegramId == UserId);
+            Db.Users.Remove(user);
             Db.SaveChanges();
             CreateUser(UserId);
         }
@@ -51,39 +55,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             switch (type)
             {
                 case "university":
-                    University university = new University
-                    {
-                        Id = Db.Universities.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
-                    user.University = university;
+                    Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University = Db.Universities.FirstOrDefault(n => n.Name == param);
                     Db.Users.Update(user);
                     break;
                 case "facility":
-                    Facility facility = new Facility()
-                    {
-                        Id = Db.Facilities.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    Facility facility = Db.Facilities.FirstOrDefault(n => n.Name == param);
                     user.Facility = facility;
                     Db.Users.Update(user);
                     break;
                 case "course":
-                    Course course = new Course
-                    {
-                        Id = Db.Courses.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    Course course = Db.Courses.FirstOrDefault(n => n.Name == param);
                     user.Course = course;
                     Db.Users.Update(user);
                     break;
                 case "group":
-                    Group group = new Group
-                    {
-                        Id = Db.Groups.FirstOrDefault(n => n.Name == param).Id,
-                        Name = param
-                    };
+                    Group group = Db.Groups.FirstOrDefault(n => n.Name == param);
                     user.Group = group;
+                    Db.Users.Update(user);
                     break;
             }
 
@@ -91,21 +79,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         }
         public string CheckUserElements(long UserId, string type)
         {
-            User user = Db.Users.FirstOrDefault(n => n.TelegramId == UserId);
 
             switch (type)
             {
                 case "university":
-                    if (user != null) return user.University.Name;
+                    if (Db.Users.Include(y => y.University).FirstOrDefault(n => n.TelegramId == UserId).University != null) return Db.Users.Include(y => y.University).FirstOrDefault(n => n.TelegramId == UserId).University.Name;
                     break;
                 case "facility":
-                    if (user != null) return user.Facility.Name;
+                    if (Db.Users.Include(y => y.Facility).FirstOrDefault(n => n.TelegramId == UserId).Facility != null) return Db.Users.Include(y => y.Facility).FirstOrDefault(n => n.TelegramId == UserId).Facility.Name;
                     break;
                 case "course":
-                    if (user != null) return user.Course.Name;
+                    if (Db.Users.Include(y => y.Course).FirstOrDefault(n => n.TelegramId == UserId).Course != null) return Db.Users.Include(y => y.Course).FirstOrDefault(n => n.TelegramId == UserId).Course.Name;
                     break;
                 case "group":
-                    if (user != null) return user.Group.Name;
+                    if (Db.Users.Include(y => y.Group).FirstOrDefault(n => n.TelegramId == UserId).Group != null) return Db.Users.Include(y => y.Group).FirstOrDefault(n => n.TelegramId == UserId).Group.Name;
                     break;
             }
             return "";

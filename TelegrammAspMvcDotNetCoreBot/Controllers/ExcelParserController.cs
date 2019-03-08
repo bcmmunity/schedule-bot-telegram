@@ -17,14 +17,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 {
 	public static class ExcelParserController
 	{
-		public static void ReadXls(string FileName)
+	    private static ScheduleController schedule = new ScheduleController();
+        public static void ReadXls(string FileName)
 		{
-			//ScheduleController.CheckFile();
+            //ScheduleController.CheckFile();
 
-			ScheduleController.Unit();
-
-			ScheduleController.AddUniversity("мисис");
-			ScheduleController.AddFacility("мисис", FileName);
+		    schedule.AddUniversity("мисис");
+		    schedule.AddFacility("мисис", FileName);
 
 			HSSFWorkbook hssfwb;
 			using (FileStream file = new FileStream(@"" + FileName + ".xls", FileMode.Open, FileAccess.Read))
@@ -38,7 +37,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 				if (hssfwb.GetSheet(course + " курс") == null)
 					break;
 
-				ScheduleController.AddCourse("мисис", FileName, course.ToString());
+				schedule.AddCourse("мисис", FileName, course.ToString());
 
 				ISheet sheet = hssfwb.GetSheet(course + " курс");
 
@@ -50,18 +49,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 					if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "1")
 					{
-						ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа");
+						schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа");
 					}
 					else if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "2")
 					{
 						if (sheet.GetRow(0).GetCell(group - 1).ToString() == "")
-							ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа");
+							schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа");
 						else
-							ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа");
+							schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа");
 					}
 					else
 					{
-						ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue);
+						schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue);
 					}
 
 					ScheduleWeek week1 = new ScheduleWeek();
@@ -104,26 +103,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 					if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "1")
 					{
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week1);
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week2);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week1);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week2);
 					}
 					else if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "2")
 					{
 						if (sheet.GetRow(0).GetCell(group - 1).ToString() == "")
 						{
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week1);
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week2);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week1);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week2);
 						}
 						else
 						{
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week1);
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week2);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week1);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week2);
 						}
 					}
 					else
 					{
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week1);
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week2);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week1);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week2);
 					}
 
 					group += 2;
@@ -133,12 +132,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 		public static void ReadXlsx(string FileName)
 		{
-			//ScheduleController.CheckFile();
+			//schedule.CheckFile();
 
-			ScheduleController.Unit();
-
-			ScheduleController.AddUniversity("мисис");
-			ScheduleController.AddFacility("мисис", FileName);
+			schedule.AddUniversity("мисис");
+			schedule.AddFacility("мисис", FileName);
 
 
 			XSSFWorkbook hssfwb;
@@ -152,7 +149,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 				if (hssfwb.GetSheet(course + " курс") == null)
 					break;
-				ScheduleController.AddCourse("мисис", FileName, course.ToString());
+				schedule.AddCourse("мисис", FileName, course.ToString());
 
 				ISheet sheet = hssfwb.GetSheet(course + " курс");
 
@@ -164,18 +161,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 					if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "1")
 					{
-						ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа");
+						schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа");
 					}
 					else if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "2")
 					{
 						if (sheet.GetRow(0).GetCell(group - 1).ToString() == "")
-							ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа");
+							schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа");
 						else
-							ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа");
+							schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа");
 					}
 					else
 					{
-						ScheduleController.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue);
+						schedule.AddGroup("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue);
 					}
 
 					ScheduleWeek week1 = new ScheduleWeek();
@@ -218,26 +215,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 					if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "1")
 					{
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week1);
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week2);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week1);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 1 подгруппа", week2);
 					}
 					else if (sheet.GetRow(1).GetCell(group - 1).NumericCellValue.ToString() == "2")
 					{
 						if (sheet.GetRow(0).GetCell(group - 1).ToString() == "")
 						{
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week1);
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week2);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week1);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 3).StringCellValue + " 2 подгруппа", week2);
 						}
 						else
 						{
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week1);
-							ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week2);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week1);
+							schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа", week2);
 						}
 					}
 					else
 					{
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week1);
-						ScheduleController.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week2);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week1);
+						schedule.AddScheduleWeek("мисис", FileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue, week2);
 					}
 
 					group += 2;

@@ -22,8 +22,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
         public override async Task Execute(Message message, TelegramBotClient botClient)
 		{
-            ScheduleController.Unit();
-            List<string> un = ScheduleController.GetUniversities();
+            List<string> un = new ScheduleController().GetUniversities();
 
             string[][] unn = new string[un.ToList().Count][];
 

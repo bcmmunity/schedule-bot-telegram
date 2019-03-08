@@ -27,7 +27,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         public static void AddHomeWork(string university, string faculty, string course, string groupName, string date,
             string text)
         {
-            if (ScheduleController.IsGroupExist(university, faculty, course, groupName))
+            if (new ScheduleController().IsGroupExist(university, faculty, course, groupName))
             {
                 Group gr = new Group();
 
@@ -71,7 +71,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         public static string GetHomeWork(string university, string faculty, string course, string groupName,
             string date)
         {
-            if (ScheduleController.IsGroupExist(university, faculty, course, groupName))
+            if (new ScheduleController().IsGroupExist(university, faculty, course, groupName))
             {
                 HomeWork gr = new HomeWork();
                 gr = (from kl in db.HomeWorks
