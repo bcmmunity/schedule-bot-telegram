@@ -33,10 +33,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
             //new UserDb().CheckUser(565656433);
             //new UserDb().EditUser(259762827, "facility", "ИТАСУ");
-            string a = new UserDb().CheckUserElements(358243561, "facility");
-            new UserDb().EditUser(358243561, "university", "мисис");
+        //    string a = new UserDb().CheckUserElements(358243561, "facility");
+        //    new UserDb().EditUser(358243561, "university", "мисис");
 
-           bool b = new ScheduleController().IsFacilityExist(new UserDb().CheckUserElements(358243561, "university"), "ИТАСУ");
+      //     bool b = new ScheduleController().IsFacilityExist(new UserDb().CheckUserElements(358243561, "university"), "ИТАСУ");
 
             //var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
             //optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");

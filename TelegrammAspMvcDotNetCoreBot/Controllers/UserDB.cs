@@ -54,9 +54,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             User user = Db.Users.FirstOrDefault(n => n.TelegramId == UserId);
             switch (type)
             {
-                case "university":
-                    University university = Db.Universities.FirstOrDefault(n => n.Name == param);
-                    user.University = university;
+                case "university": 
+                    Db.Users.FirstOrDefault(n => n.TelegramId == UserId).University = Db.Universities.FirstOrDefault(n => n.Name == param);
                     Db.Users.Update(user);
                     break;
                 case "facility":
