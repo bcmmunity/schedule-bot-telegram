@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TelegrammAspMvcDotNetCoreBot.Models
+﻿namespace TelegrammAspMvcDotNetCoreBot.Models
 {
 
     public class User

@@ -1,13 +1,12 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using DocumentFormat.OpenXml.Spreadsheet;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using Group = TelegrammAspMvcDotNetCoreBot.Models.Group;
 
-namespace TelegrammAspMvcDotNetCoreBot.Controllers
+namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-    public class HomeWorkController
+    public class HomeWorkDB
     {
         static MyContext db;
         
@@ -27,11 +26,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         public static void AddHomeWork(string university, string faculty, string course, string groupName, string date,
             string text)
         {
-            if (new ScheduleController().IsGroupExist(university, faculty, course, groupName))
+            if (new ScheduleDB().IsGroupExist(university, faculty, course, groupName))
             {
                 Group gr = new Group();
 
-                HomeWork d = new HomeWork();
+                Models.HomeWork d = new Models.HomeWork();
                 d.Date = date;
                 d.HomeWorkText = text;
 
@@ -71,9 +70,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         public static string GetHomeWork(string university, string faculty, string course, string groupName,
             string date)
         {
-            if (new ScheduleController().IsGroupExist(university, faculty, course, groupName))
+            if (new ScheduleDB().IsGroupExist(university, faculty, course, groupName))
             {
-                HomeWork gr = new HomeWork();
+                Models.HomeWork gr = new Models.HomeWork();
                 gr = (from kl in db.HomeWorks
                     where kl.Date == date && kl.Group.Name == groupName && kl.Group.Course.Name == course &&
                           kl.Group.Course.Facility.Name == faculty &&

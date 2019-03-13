@@ -1,5 +1,3 @@
-using System;
-
 namespace TelegrammAspMvcDotNetCoreBot.Models
 {
     public class ErrorViewModel

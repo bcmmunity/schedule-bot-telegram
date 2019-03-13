@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TelegrammAspMvcDotNetCoreBot.Models;
-using TelegrammAspMvcDotNetCoreBot.Controllers;
-using System.Net;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
+using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
 
 namespace TelegrammAspMvcDotNetCoreBot
 {
@@ -19,12 +13,6 @@ namespace TelegrammAspMvcDotNetCoreBot
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-
-			//Thread thread = new Thread(new ThreadStart(Function));
-			//thread.IsBackground = true;
-			//thread.Name = "Function";
-			//thread.Start();
-			//ScheduleUpdateController.Update();
 		}
 
         public IConfiguration Configuration { get; }
