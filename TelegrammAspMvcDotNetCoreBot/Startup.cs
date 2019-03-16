@@ -13,7 +13,11 @@ namespace TelegrammAspMvcDotNetCoreBot
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-		}
+            //botClient.OnCallbackQuery += async (object sc, Telegram.Bot.Args.CallbackQueryEventArgs ev) =>
+            //{
+            //    await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "done");
+            //};
+        }
 
         public IConfiguration Configuration { get; }
 
@@ -27,10 +31,12 @@ namespace TelegrammAspMvcDotNetCoreBot
 				options.UseSqlServer(connection));
 
 			services.AddMvc();
-		}
 
-		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+           
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -52,7 +58,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             });
 
             //Bot Configuration
-            Bot.GetBotClientAsync().Wait();
+           // Bot.GetBotClientAsync().Wait();
         }
     }
 }

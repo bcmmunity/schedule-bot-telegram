@@ -1,14 +1,14 @@
 ﻿namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-    public static class TelegramKeybord
+    public class TelegramKeybord
     {
-		public static Telegram.Bot.Types.ReplyMarkups.ReplyKeyboardMarkup GetKeyboard(string[][] buttons, int rows)
+		public Telegram.Bot.Types.ReplyMarkups.ReplyKeyboardMarkup GetKeyboard(string[][] buttons, int rows)
 		{
-			Telegram.Bot.Types.KeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.KeyboardButton[rows][];
+		    Telegram.Bot.Types.ReplyMarkups.KeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[rows][];
 
 			for (int row = 0; row < rows; row++)
 			{
-				keyboardButtons[row] = new Telegram.Bot.Types.KeyboardButton[buttons[row].Length];
+				keyboardButtons[row] = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[buttons[row].Length];
 
 				for (int column = 0; column < buttons[row].Length; column++)
 				{
@@ -26,5 +26,25 @@
 
 			return keyboard;
 		}
-	}
+
+        public Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup GetInlineKeyboard(string[][] buttons, string[][] callback_data, int rows)
+        {
+            Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton[rows][];
+            
+            for (int row = 0; row < rows; row++)
+            {
+                keyboardButtons[row] = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton[buttons[row].Length];
+
+                for (int column = 0; column < buttons[row].Length; column++)
+                {
+                    keyboardButtons[row][column] = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton {Text = buttons[row][column], CallbackData = callback_data[row][column] };
+                } 
+            }
+
+
+            var keyboard = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(keyboardButtons);
+
+            return keyboard;
+        }
+    }
 }

@@ -8,12 +8,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 	{
 		public static void Update()
 		{
-
-            ExcelParserToDB.ReadXls("ИТАСУ");
-            ExcelParserToDB.ReadXls("ИНМИН");
-            ExcelParserToDB.ReadXlsx("МГИ");
-            ExcelParserToDB.ReadXls("ЭУПП");
-            ExcelParserToDB.ReadXls("ЭкоТех");
+            ExcelParserToDB parserToDB = new ExcelParserToDB();
+            parserToDB.ReadXls("ИТАСУ");
+            parserToDB.ReadXls("ИНМИН");
+            parserToDB.ReadXlsx("МГИ");
+            parserToDB.ReadXls("ЭУПП");
+            parserToDB.ReadXls("ЭкоТех");
 
         }
 

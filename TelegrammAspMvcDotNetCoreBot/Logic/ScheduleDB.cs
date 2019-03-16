@@ -10,12 +10,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 	    public ScheduleDB()
 	    {
 	        var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-	        optionsBuilder.UseSqlServer("\\ConnectionString\\");
-	       
+	        // optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+	        optionsBuilder.UseSqlServer(
+	            "Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
 	        Db = new MyContext(optionsBuilder.Options);
 	    }
 
-        public static MyContext Db;
+	    public static MyContext Db;
 		
 		public void AddUniversity(string name)
 		{

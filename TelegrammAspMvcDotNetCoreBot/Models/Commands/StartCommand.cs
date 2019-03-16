@@ -3,19 +3,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.InputFiles;
 using TelegrammAspMvcDotNetCoreBot.Logic;
 
 namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 {
     public class StartCommand : Command
     {
-        private readonly FileToSend _uniSticker = new FileToSend("CAADAgADCAADi6p7D_L_84SgdFjxAg");
+        private readonly InputOnlineFile _uniSticker = new InputOnlineFile("CAADAgADCAADi6p7D_L_84SgdFjxAg");
 
         public override string Name => @"/start";
 
         public override bool Contains(Message message)
         {
-            if (message.Type != Telegram.Bot.Types.Enums.MessageType.TextMessage)
+            if (message.Type != Telegram.Bot.Types.Enums.MessageType.Text)
                 return false;
 
             return message.Text.Contains(Name);
@@ -45,7 +46,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
 		    //await botClient.SendTextMessageAsync(chatId, "Привет, выбери свой университет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
 
-		    await botClient.SendStickerAsync(chatId, _uniSticker, replyMarkup: TelegramKeybord.GetKeyboard(unn, count));
+		    await botClient.SendStickerAsync(chatId, _uniSticker, replyMarkup: new TelegramKeybord().GetKeyboard(unn, count));
 
         }
 	}
