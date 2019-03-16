@@ -7,10 +7,10 @@ using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-    public static class ExcelParserToDB
+    public class ExcelParserToDB
 	{
 	    private static readonly ScheduleDB Schedule = new ScheduleDB();
-        public static void ReadXls(string fileName)
+        public void ReadXls(string fileName)
 		{
             //ScheduleController.CheckFile();
 
@@ -122,7 +122,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 			}
 		}
 
-		public static void ReadXlsx(string fileName)
+		public void ReadXlsx(string fileName)
 		{
 			//schedule.CheckFile();
 
