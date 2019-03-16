@@ -13,10 +13,6 @@ namespace TelegrammAspMvcDotNetCoreBot
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            //botClient.OnCallbackQuery += async (object sc, Telegram.Bot.Args.CallbackQueryEventArgs ev) =>
-            //{
-            //    await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "done");
-            //};
         }
 
         public IConfiguration Configuration { get; }
@@ -58,7 +54,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             });
 
             //Bot Configuration
-           // Bot.GetBotClientAsync().Wait();
-        }
+			Bot.GetBotClientAsync().Wait();
+		}
     }
 }
