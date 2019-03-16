@@ -27,7 +27,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Telegramm
 
 			_botClient.OnCallbackQuery += async (object sc, Telegram.Bot.Args.CallbackQueryEventArgs ev) =>
 			{
-				await _botClient.AnswerCallbackQueryAsync(ev.CallbackQuery.Id, "done");
+				await _botClient.AnswerCallbackQueryAsync(ev.CallbackQuery.Message.Chat.Id.ToString(), "done");
 			};
 
 
