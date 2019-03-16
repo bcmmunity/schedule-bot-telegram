@@ -239,7 +239,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             }
 		    else if (update.Type == UpdateType.CallbackQuery)
 		    {
-		        await botClient.SendTextMessageAsync(chatId, "We are in callback", ParseMode.Markdown);
+		        await botClient.SendTextMessageAsync(update.CallbackQuery.Id, "We are in callback", ParseMode.Markdown);
 
                 string[][] unn =
 		        {
