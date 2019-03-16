@@ -37,6 +37,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
             if (update.Type == UpdateType.Message)
 		    {
+		        await botClient.SendTextMessageAsync(chatId, "We are in messages", ParseMode.Markdown);
 
                 InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
 		        InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
@@ -238,6 +239,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             }
 		    else if (update.Type == UpdateType.CallbackQuery)
 		    {
+		        await botClient.SendTextMessageAsync(update.CallbackQuery.Id, "We are in callback", ParseMode.Markdown);
 
                 string[][] unn =
 		        {
