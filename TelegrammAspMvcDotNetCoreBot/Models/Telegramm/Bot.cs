@@ -25,12 +25,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Telegramm
 
             _botClient = new TelegramBotClient(AppSettings.Key);
 
-			_botClient.OnCallbackQuery += async (object sc, Telegram.Bot.Args.CallbackQueryEventArgs ev) =>
-			{
-				await _botClient.AnswerCallbackQueryAsync(ev.CallbackQuery.Message.Chat.Id.ToString(), "done");
-			};
-
-
 			string hook = string.Format(AppSettings.Url, "api/message/update");
             await _botClient.SetWebhookAsync(hook);
             return _botClient;

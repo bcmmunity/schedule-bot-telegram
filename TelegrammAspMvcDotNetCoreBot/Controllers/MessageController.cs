@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
@@ -27,17 +28,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
 		{
-
-		    var message = update.Message;
+		  
             var botClient = await Bot.GetBotClientAsync();
-		    var chatId = message.Chat.Id;
-
 		    UserDb userDb = new UserDb();
 
+		
 
             if (update.Type == UpdateType.Message)
 		    {
-		        await botClient.SendTextMessageAsync(chatId, "We are in messages", ParseMode.Markdown);
+		        var message = update.Message;
+		        var chatId = message.Chat.Id;
 
                 InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
 		        InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
@@ -239,9 +239,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             }
 		    else if (update.Type == UpdateType.CallbackQuery)
 		    {
-		        await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, "We are in callback", ParseMode.Markdown);
+		        long chatId = update.CallbackQuery.Message.Chat.Id;
+                TelegramKeybord keybord = new TelegramKeybord();
 
-                string[][] unn =
+		        string[][] unn =
 		        {
 		            new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"},
 		            new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"}
@@ -253,107 +254,108 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            new[] {"Mo2", "Tu2", "We2", "Th2", "Fr2", "Sa2"}
 		        };
 
-                await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-		                    update.CallbackQuery.Message.MessageId, "xxx", replyMarkup: new TelegramKeybord().GetInlineKeyboard(unn, callbackData, 2));
+		        InlineKeyboardMarkup inlineKeyboard = keybord.GetInlineKeyboard(unn, callbackData, 2);
 
-                //await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id,
-                //"test", parseMode: ParseMode.Html);
-                //await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "done", cacheTime: 1);
-
-                //if (update.CallbackQuery.Data.Equals("Mo1"))
-                //{
-                //    // Код определения следующего рецепта...
-                //    await botClient.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id,
-                //    "test", parseMode: ParseMode.Html);
-                //}
-
-                //switch (update.CallbackQuery.Data)  
-                //{
-                //    case "Mo1":
-                //    {
-                //        string result = ScheduleOnTheDay(chatId, userDb, 1, 1);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //            update.CallbackQuery.Message.MessageId, result);
-                //              break;
-                //    }
-                //    case "Tu1":
-                //    {
-                //        string result = ScheduleOnTheDay(chatId, userDb, 1, 2);
-                //        await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //            update.CallbackQuery.Message.MessageId, result);
-                //        break;
-                //    }
-                //    case "We1":
-                //    {
-                //        string result = ScheduleOnTheDay(chatId, userDb, 1, 3);
-                //        await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //            update.CallbackQuery.Message.MessageId, result);
-                //        break;
-                //    }
-                //    case "Th1":
-                //    {
-                //        string result = ScheduleOnTheDay(chatId, userDb, 1, 4);
-                //        await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //            update.CallbackQuery.Message.MessageId, result);
-                //        break;
-                //    }
-                //    case "Fr1":
-                //    {
-                //        string result = ScheduleOnTheDay(chatId, userDb, 1, 5);
-                //        await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //            update.CallbackQuery.Message.MessageId, result);
-                //        break;
-                //    }
-                //    case "Sa1":
-                //    {
-                //        string result = ScheduleOnTheDay(chatId, userDb, 1, 6);
-                //        await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //            update.CallbackQuery.Message.MessageId, result);
-                //        break;
-                //    }
-                //              case "Mo2":
-                //                  {
-                //                      string result = ScheduleOnTheDay(chatId, userDb, 2, 1);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //                  update.CallbackQuery.Message.MessageId, result);
-                //                      break;
-                //                  }
-                //              case "Tu2":
-                //                  {
-                //                      string result = ScheduleOnTheDay(chatId, userDb, 2, 2);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //                          update.CallbackQuery.Message.MessageId, result);
-                //                      break;
-                //                  }
-                //              case "We2":
-                //                  {
-                //                      string result = ScheduleOnTheDay(chatId, userDb, 2, 3);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //                          update.CallbackQuery.Message.MessageId, result);
-                //                      break;
-                //                  }
-                //              case "Th2":
-                //                  {
-                //                      string result = ScheduleOnTheDay(chatId, userDb, 2, 4);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //                          update.CallbackQuery.Message.MessageId, result);
-                //                      break;
-                //                  }
-                //              case "Fr2":
-                //                  {
-                //                      string result = ScheduleOnTheDay(chatId, userDb, 2, 5);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //                          update.CallbackQuery.Message.MessageId, result);
-                //                      break;
-                //                  }
-                //              case "Sa2":
-                //                  {
-                //                      string result = ScheduleOnTheDay(chatId, userDb, 2, 6);
-                //                      await botClient.EditMessageTextAsync(update.CallbackQuery.Message.Chat.Id,
-                //                          update.CallbackQuery.Message.MessageId, result);
-                //                      break;
-                //                  }
-                //          }
+                switch (update.CallbackQuery.Data)
+                {
+                       
+                    case "Mo1":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 1, 1);
+                            await botClient.EditMessageTextAsync(chatId,
+                  update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Tu1":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 1, 2);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "We1":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 1, 3);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Th1":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 1, 4);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Fr1":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 1, 5);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Sa1":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 1, 6);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Mo2":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 2, 1);
+                            await botClient.EditMessageTextAsync(chatId,
+                        update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Tu2":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 2, 2);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "We2":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 2, 3);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Th2":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 2, 4);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Fr2":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 2, 5);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                    case "Sa2":
+                        {
+                            string result = ScheduleOnTheDay(chatId, userDb, 2, 6);
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineKeyboard);
+                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                            break;
+                        }
+                }
             }
 
 
@@ -388,8 +390,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		                }
 
             if (result != "")
+            {
+                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                if (weekNumNow == 1)
+                    result += "\nСейчас идет верхняя неделя";
+                else
+                    result += "\nСейчас идет нижняя неделя";
                 return result;
-           
+            }
+
             return "Учебы нет";
         }
 	}
