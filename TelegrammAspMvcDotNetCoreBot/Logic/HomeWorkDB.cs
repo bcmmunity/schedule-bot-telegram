@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using TelegrammAspMvcDotNetCoreBot.Models;
@@ -8,118 +9,133 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
     public class HomeWorkDB
     {
-        static MyContext db;
+       public static MyContext Db;
         
-        /// <summary>
-        /// Инициализация базы данных
-        /// </summary>
-        public static void Unit()
+        public HomeWorkDB()
         {
             var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-            optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=test37;Trusted_Connection=True;");
-            db = new MyContext(optionsBuilder.Options);
+             optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+
+//optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+            Db = new MyContext(optionsBuilder.Options);
         }
 
         /// <summary>
         /// Добавление добашнего задания на определенный день
         /// </summary>
-        public static void AddHomeWork(string university, string faculty, string course, string groupName, string date,
+        public void AddHomeWork(string university, string faculty, string course, string groupName, string date,
             string text)
         {
             if (new ScheduleDB().IsGroupExist(university, faculty, course, groupName))
             {
-                Group gr = new Group();
+                string mainGroup = groupName.Split(' ').First();
 
-                Models.HomeWork d = new Models.HomeWork();
-                d.Date = date;
-                d.HomeWorkText = text;
+                University universitym = Db.Universities.FirstOrDefault(m => m.Name == university);
+                Facility facultym = Db.Facilities.Where(l => l.University == universitym)
+                    .FirstOrDefault(t => t.Name == faculty);
+                Course coursem = Db.Courses.Where(o => o.Facility == facultym)
+                    .FirstOrDefault(t => t.Name == course);
 
-                University universitym = db.Universities.Where(m => m.Name == university).FirstOrDefault();
-                Facility facultym = db.Facilities.Where(l => l.University == universitym).Where(t => t.Name == faculty)
-                    .FirstOrDefault();
-                Course coursem = db.Courses.Where(o => o.Facility == facultym).Where(t => t.Name == course)
-                    .FirstOrDefault();
-                gr = db.Groups.Where(g => g.Course == coursem).Where(t => t.Name == groupName).FirstOrDefault();
-                d.Group = gr;
+                List<Group> @group = new List<Group>();
+                @group = Db.Groups.Where(g => g.Course == coursem).Where(t => t.Name.Contains(mainGroup)).ToList();
 
-                db.HomeWorks.Add(d);
-                db.SaveChanges();
+                foreach (var itemGroup in @group)
+                {
+                    HomeWork homeWork = new HomeWork();
+                    homeWork.Date = date;
+                    homeWork.HomeWorkText = text;
+
+                    homeWork.Group = itemGroup;
+                    Db.HomeWorks.Add(homeWork);
+                    Db.SaveChanges();
+                }
             }
         }
 
-        /// <summary>
-        /// Добавление домашшнего задания на сегодня
-        /// </summary>
-        public static void AddHomeWorkToday(string university, string faculty, string course, string groupName,
-            string text)
-        {
-            string date = DateTime.Now.ToString("d");
-            AddHomeWork(university, faculty, course, groupName, date, text);
-        }
+        ///// <summary>
+        ///// Добавление домашшнего задания на сегодня
+        ///// </summary>
+        //public static void AddHomeWorkToday(string university, string faculty, string course, string groupName,
+        //    string text)
+        //{
+        //    string date = DateTime.Now.ToString("d");
+        //    AddHomeWork(university, faculty, course, groupName, date, text);
+        //}
         
-        /// <summary>
-        /// Добавление домашнего задания на завтра
-        /// </summary>
-        public static void AddHomeWorkTomorrow(string university, string faculty, string course, string groupName,
-            string text)
-        {
-            string date = DateTime.Now.AddDays(1).ToString("d");
-            AddHomeWork(university, faculty, course, groupName, date, text);
-        }
+        ///// <summary>
+        ///// Добавление домашнего задания на завтра
+        ///// </summary>
+        //public static void AddHomeWorkTomorrow(string university, string faculty, string course, string groupName,
+        //    string text)
+        //{
+        //    string date = DateTime.Now.AddDays(1).ToString("d");
+        //    AddHomeWork(university, faculty, course, groupName, date, text);
+        //}
         
-        public static string GetHomeWork(string university, string faculty, string course, string groupName,
+        public string GetHomeWork(string university, string faculty, string course, string groupName,
             string date)
         {
+            string result = "";
             if (new ScheduleDB().IsGroupExist(university, faculty, course, groupName))
             {
-                Models.HomeWork gr = new Models.HomeWork();
-                gr = (from kl in db.HomeWorks
-                    where kl.Date == date && kl.Group.Name == groupName && kl.Group.Course.Name == course &&
-                          kl.Group.Course.Facility.Name == faculty &&
-                          kl.Group.Course.Facility.University.Name == university
-                    select kl).FirstOrDefault();
+                List<HomeWork> homeWorks = Db.HomeWorks.Where(m => m.Date == date).Where(n => n.Group.Name == groupName).ToList();
 
-                return gr.HomeWorkText;
+
+                //homeWork = (from kl in Db.HomeWorks
+                //    where kl.Date == date && kl.Group.Name == groupName && kl.Group.Course.Name == course &&
+                //          kl.Group.Course.Facility.Name == faculty &&
+                //          kl.Group.Course.Facility.University.Name == university
+                //    select kl).FirstOrDefault();
+                if (homeWorks.Count == 0)
+                    result = "Ничего не задано\n";
+                else
+                {
+                    foreach (var item in homeWorks)
+                    {
+                        result += item.HomeWorkText+"\n";
+                    }
+                    
+                }
             }
 
-            return "";
+            return result;
         }
 
         
-        public static string GetHomeWorkToday(string university, string faculty, string course, string groupName)
-        {
-            string date = DateTime.Now.ToString("d");
-            return GetHomeWork(university, faculty, course, groupName, date);
-        }
+        //public static string GetHomeWorkToday(string university, string faculty, string course, string groupName)
+        //{
+        //    string date = DateTime.Now.ToString("d");
+        //    return GetHomeWork(university, faculty, course, groupName, date);
+        //}
 
-        public static string GetHomeWorkTomorrow(string university, string faculty, string course, string groupName)
-        {
-            string date = DateTime.Now.AddDays(1).ToString("d");
-            return GetHomeWork(university, faculty, course, groupName, date);
-        }
+        //public static string GetHomeWorkTomorrow(string university, string faculty, string course, string groupName)
+        //{
+        //    string date = DateTime.Now.AddDays(1).ToString("d");
+        //    return GetHomeWork(university, faculty, course, groupName, date);
+        //}
 
-        public static string GetHomeWorkYesterday(string university, string faculty, string course, string groupName)
-        {
-            string date = DateTime.Now.AddDays(-1).ToString("d");
-            return GetHomeWork(university, faculty, course, groupName, date);
-        }
+        //public static string GetHomeWorkYesterday(string university, string faculty, string course, string groupName)
+        //{
+        //    string date = DateTime.Now.AddDays(-1).ToString("d");
+        //    return GetHomeWork(university, faculty, course, groupName, date);
+        //}
 
-        public static void DeleteOldHomeWork()
+        public void DeleteOldHomeWork()
         {
             DateTime now = DateTime.Now;
           //  DateTime twoWeeksAgo;
 //            TimeSpan dif = now - twoWeeksAgo;
-            foreach (var h in db.HomeWorks)
+            foreach (var h in Db.HomeWorks)
             {
                 DateTime homeWorkOnDelete = DateTime.Parse(h.Date);
                 TimeSpan dif = now - homeWorkOnDelete;
                 if (dif.Days > 14)
                 {
-                    db.HomeWorks.Remove(h);
+                    Db.HomeWorks.Remove(h);
                 }
             }
 
-            db.SaveChanges();
+            Db.SaveChanges();
 
         }
     }

@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
@@ -14,7 +17,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		}
 
 		public IActionResult Index()
-        {
+		{
             return View();
         }
 

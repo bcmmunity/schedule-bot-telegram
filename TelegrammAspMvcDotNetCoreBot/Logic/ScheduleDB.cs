@@ -7,17 +7,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
 	public class ScheduleDB
 	{
-	    public ScheduleDB()
+	    public static MyContext Db;
+
+        public ScheduleDB()
 	    {
 	        var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-	        // optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
-	        optionsBuilder.UseSqlServer(
-	            "Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+	         optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
+	      //  optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
 	        Db = new MyContext(optionsBuilder.Options);
 	    }
 
-	    public static MyContext Db;
-		
 		public void AddUniversity(string name)
 		{
 			if (!IsUniversityExist(name))
@@ -237,5 +236,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 			return Db.ScheduleDays.Include(r => r.Lesson)
 			                      .FirstOrDefault(f => f.Id == li.FirstOrDefault(n => n.Day == day).Id);
 		}
+
+
 	}
 }
