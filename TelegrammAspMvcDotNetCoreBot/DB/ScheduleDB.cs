@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace TelegrammAspMvcDotNetCoreBot.Logic
+namespace TelegrammAspMvcDotNetCoreBot.DB
 {
 	public class ScheduleDB
 	{
 	    public static MyContext Db;
 
         public ScheduleDB()
-	    {
-	        var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-	         optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
-	      //  optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
-	        Db = new MyContext(optionsBuilder.Options);
-	    }
+        {
+            Db = new DB().Connect();
+        }
 
 		public void AddUniversity(string name)
 		{

@@ -3,11 +3,12 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Collections.Generic;
 using System.IO;
+using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-    public class ExcelParserToDB
+    public class ExcelParser
 	{
 	    private static readonly ScheduleDB Schedule = new ScheduleDB();
         public void ReadXls(string fileName)

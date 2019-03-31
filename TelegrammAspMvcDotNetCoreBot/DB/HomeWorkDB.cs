@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using Group = TelegrammAspMvcDotNetCoreBot.Models.Group;
 
-namespace TelegrammAspMvcDotNetCoreBot.Logic
+namespace TelegrammAspMvcDotNetCoreBot.DB
 {
     public class HomeWorkDB
     {
@@ -13,11 +12,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         
         public HomeWorkDB()
         {
-            var optionsBuilder = new DbContextOptionsBuilder<MyContext>();
-             optionsBuilder.UseSqlServer("Server=localhost;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
-
-//optionsBuilder.UseSqlServer("Server=studystat.ru;Database=u0641156_studystat;User Id=u0641156_studystat;Password=Stdstt1!;");
-            Db = new MyContext(optionsBuilder.Options);
+            Db = new DB().Connect();
         }
 
         /// <summary>

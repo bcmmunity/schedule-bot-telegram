@@ -2,9 +2,11 @@
 {
     public class TelegramKeybord
     {
-		public Telegram.Bot.Types.ReplyMarkups.ReplyKeyboardMarkup GetKeyboard(string[][] buttons, int rows)
+		public Telegram.Bot.Types.ReplyMarkups.ReplyKeyboardMarkup GetKeyboard(string[][] buttons)
 		{
-		    Telegram.Bot.Types.ReplyMarkups.KeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[rows][];
+		    int rows = buttons.Length;
+
+            Telegram.Bot.Types.ReplyMarkups.KeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[rows][];
 
 			for (int row = 0; row < rows; row++)
 			{
@@ -27,8 +29,9 @@
 			return keyboard;
 		}
 
-        public Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup GetInlineKeyboard(string[][] buttons, string[][] callback_data, int rows)
+        public Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup GetInlineKeyboard(string[][] buttons, string[][] callback_data)
         {
+            int rows = buttons.Length;
             Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton[rows][];
             
             for (int row = 0; row < rows; row++)

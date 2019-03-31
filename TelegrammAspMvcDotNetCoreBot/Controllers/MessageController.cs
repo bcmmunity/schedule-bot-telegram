@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
+using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Logic;
-using TelegrammAspMvcDotNetCoreBot.Models;
 using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
@@ -34,43 +32,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
         {
+            if (update == null) return Ok();
 
             var botClient = await Bot.GetBotClientAsync();
 
-		
-
             if (update.Type == UpdateType.Message)
 		    {
-		        var message = update.Message;
+                var message = update.Message;
 		        var chatId = message.Chat.Id;
-
-                InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
-		        InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
-		        InputOnlineFile groupSticker = new InputOnlineFile("CAADAgADBAADi6p7DzzxU-ilYtP6Ag");
-		        InputOnlineFile workSticker = new InputOnlineFile("CAADAgADBQADi6p7D849HV-BVKxIAg");
-		        InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADAgADi6p7D_SOcGo7bWCIAg");
-
-		        if (update == null) return Ok();
-
 		        var commands = Bot.Commands;
 
-		        ScheduleDB schedule = new ScheduleDB();
-                HomeWorkDB homeWork = new HomeWorkDB();
-
-		        TelegramKeybord keybord = new TelegramKeybord();
-
-                
-		        string[][] mainKeyboardButtons =
-		        {
-		            new[] {"Сегодня", "Завтра"},
-		            new[] {"Расписание"},
-		            new[] {"Добавить ДЗ", "Что задали?"},
-		            new[] {"О пользователе","Сбросить"}
-		        };
-
-		        ReplyKeyboardMarkup mainKeyboard = keybord.GetKeyboard(mainKeyboardButtons, 4);
-
-                foreach (var command in commands)
+		        foreach (var command in commands)
 		        {
 		            if (command.Contains(message) || (!userDb.CheckUser(chatId)))
 		            {
@@ -79,14 +51,35 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            }
 		        }
 
-
 		        if (!userDb.CheckUser(chatId))
 		            return Ok();
+
+                InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
+		        InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
+		        InputOnlineFile groupSticker = new InputOnlineFile("CAADAgADBAADi6p7DzzxU-ilYtP6Ag");
+		        InputOnlineFile workSticker = new InputOnlineFile("CAADAgADBQADi6p7D849HV-BVKxIAg");
+		        InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADAgADi6p7D_SOcGo7bWCIAg");
+
+                ScheduleDB scheduleDb = new ScheduleDB();
+                HomeWorkDB homeWorkDb = new HomeWorkDB();
+                Schedule schedule = new Schedule();
+
+		        TelegramKeybord keybord = new TelegramKeybord();
+
+		        string[][] mainKeyboardButtons =
+		        {
+		            new[] {"Сегодня", "Завтра"},
+		            new[] {"Расписание"},
+		            new[] {"Добавить ДЗ", "Что задали?"},
+		            new[] {"О пользователе","Сбросить"}
+		        };
+
+		        ReplyKeyboardMarkup mainKeyboard = keybord.GetKeyboard(mainKeyboardButtons);
 
                 //Режим добавления ДЗ
 		        if (Dz)
 		        {
-		            homeWork.AddHomeWork(userDb.CheckUserElements(chatId, "university"),
+		            homeWorkDb.AddHomeWork(userDb.CheckUserElements(chatId, "university"),
 		                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
 		                userDb.CheckUserElements(chatId, "group"), Date, message.Text);
                     Dz = false;
@@ -96,11 +89,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		        }
 
 		        //Основной режим 
-                if (userDb.CheckUserElements(chatId, "university") == "" && schedule.IsUniversityExist(message.Text))
+                if (userDb.CheckUserElements(chatId, "university") == "" && scheduleDb.IsUniversityExist(message.Text))
 		        {
 		            userDb.EditUser(chatId, "university", message.Text);
 
-		            List<string> un = schedule.GetFacilities(userDb.CheckUserElements(chatId, "university"));
+		            List<string> un = scheduleDb.GetFacilities(userDb.CheckUserElements(chatId, "university"));
 
 		            string[][] unn = new string[un.ToList().Count][];
 
@@ -112,17 +105,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            }
 
 		            //await botClient.SendTextMessageAsync(chatId, "Теперь выбери факультет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
-		            await botClient.SendStickerAsync(chatId, facSticker, replyMarkup: keybord.GetKeyboard(unn, count));
+		            await botClient.SendStickerAsync(chatId, facSticker, replyMarkup: keybord.GetKeyboard(unn));
 
 		            return Ok();
 		        }
 
 		        if (userDb.CheckUserElements(chatId, "facility") == "" &&
-		            schedule.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
+		            scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
 		        {
 		            userDb.EditUser(chatId, "facility", message.Text);
 
-		            List<string> un = schedule.GetCourses(userDb.CheckUserElements(chatId, "university"),
+		            List<string> un = scheduleDb.GetCourses(userDb.CheckUserElements(chatId, "university"),
 		                userDb.CheckUserElements(chatId, "facility"));
 
 		            string[][] unn = new string[un.ToList().Count][];
@@ -135,17 +128,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            }
 
 		            //await botClient.SendTextMessageAsync(chatId, "Теперь выбери курс", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
-		            await botClient.SendStickerAsync(chatId, courseSticker, replyMarkup: keybord.GetKeyboard(unn, count));
+		            await botClient.SendStickerAsync(chatId, courseSticker, replyMarkup: keybord.GetKeyboard(unn));
 		            return Ok();
 		        }
 
-		        if (userDb.CheckUserElements(chatId, "course") == "" && schedule.IsCourseExist(
+		        if (userDb.CheckUserElements(chatId, "course") == "" && scheduleDb.IsCourseExist(
 		                userDb.CheckUserElements(chatId, "university"), userDb.CheckUserElements(chatId, "facility"),
 		                message.Text))
 		        {
 		            userDb.EditUser(chatId, "course", message.Text);
 
-		            List<string> un = schedule.GetGroups(userDb.CheckUserElements(chatId, "university"),
+		            List<string> un = scheduleDb.GetGroups(userDb.CheckUserElements(chatId, "university"),
 		                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"));
 
 		            string[][] unn = new string[un.ToList().Count][];
@@ -158,11 +151,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            }
 
 		            //await botClient.SendTextMessageAsync(chatId, "Теперь выбери группу", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
-		            await botClient.SendStickerAsync(chatId, groupSticker, replyMarkup: keybord.GetKeyboard(unn, count));
+		            await botClient.SendStickerAsync(chatId, groupSticker, replyMarkup: keybord.GetKeyboard(unn));
 		            return Ok();
 		        }
 
-		        if (userDb.CheckUserElements(chatId, "group") == "" && schedule.IsGroupExist(
+		        if (userDb.CheckUserElements(chatId, "group") == "" && scheduleDb.IsGroupExist(
 		                userDb.CheckUserElements(chatId, "university"), userDb.CheckUserElements(chatId, "facility"),
 		                userDb.CheckUserElements(chatId, "course"), message.Text))
 		        {
@@ -185,7 +178,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		                day = (int) DateTime.Now.DayOfWeek;
 		            }
 
-		            string result = ScheduleOnTheDay(chatId, userDb, weekNum, day);
+		            string result = schedule.ScheduleOnTheDay(chatId, weekNum, day);
 
 		            if (!result.Equals("Учебы нет"))
 		                await botClient.SendTextMessageAsync(chatId, result, parseMode: ParseMode.Markdown, replyMarkup: mainKeyboard);
@@ -215,7 +208,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		                    day = ((int) DateTime.Now.DayOfWeek + 1) % 7;
 		            }
 
-		            string result = ScheduleOnTheDay(chatId, userDb, weekNum, day);
+		            string result = schedule.ScheduleOnTheDay(chatId, weekNum, day);
 
 		            if (!result.Equals("Учебы нет"))
 		                await botClient.SendTextMessageAsync(chatId, result, ParseMode.Markdown, replyMarkup: mainKeyboard);
@@ -236,12 +229,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 		            string[][] callbackData =
 		            {
-		                new[] {"Mo1", "Tu1", "We1", "Th1", "Fr1", "Sa1"},
-		                new[] {"Mo2", "Tu2", "We2", "Th2", "Fr2", "Sa2"}
+		                new[] {"110", "120", "130", "140", "150", "160"},
+		                new[] {"210", "220", "230", "240", "250", "260"}
 		            };
 
 		            await botClient.SendTextMessageAsync(chatId, "Выбери неделю и день", ParseMode.Markdown,
-		                replyMarkup: keybord.GetInlineKeyboard(unn, callbackData, 2));
+		                replyMarkup: keybord.GetInlineKeyboard(unn, callbackData));
 		            return Ok();
 		        }
 
@@ -269,16 +262,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                     string[][] callbackData =
 		            {
-		                new[] { "m6","m5", "m4"},
-		                new[] {"m3", "m2", "m1"},
-		                new[] {"mp","p1", "p2"},
-                        new[] {"p3", "p4", "p5"},
-		                new[] { "p6", "p7" }
+		                new[] { "361","351", "341"},
+		                new[] {"331", "321", "311"},
+		                new[] {"300","310", "320"},
+                        new[] {"330", "340", "350"},
+		                new[] { "360", "370" }
 
                     };
 
 		            await botClient.SendTextMessageAsync(chatId, "Выбери дату\n \nСегодня "+ DateConverter(now), ParseMode.Markdown,
-		                replyMarkup: keybord.GetInlineKeyboard(unn, callbackData, 5));
+		                replyMarkup: keybord.GetInlineKeyboard(unn, callbackData));
                     return Ok();
                 }
                 if (message.Text == "Что задали?" && userDb.CheckUserElements(chatId, "group") != "")
@@ -306,15 +299,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                     string[][] callbackData =
                     {
-                        new[] { "m6?","m5?", "m4?"},
-                        new[] {"m3?", "m2?", "m1?"},
-                        new[] {"mp?","p1?", "p2?"},
-                        new[] {"p3?", "p4?", "p5?"},
-                        new[] { "p6?", "p7?" }
+                        new[] { "461","451", "441"},
+                        new[] {"431", "421", "411"},
+                        new[] {"400","410", "420"},
+                        new[] {"430", "440", "450"},
+                        new[] { "460", "470" }
                     };
 
                     await botClient.SendTextMessageAsync(chatId, "Выбери дату\n \nСегодня " + DateConverter(now), ParseMode.Markdown,
-                        replyMarkup: keybord.GetInlineKeyboard(unn, callbackData, 5));
+                        replyMarkup: keybord.GetInlineKeyboard(unn, callbackData));
                     return Ok();
                 }
 		        if (message.Text == "О пользователе")
@@ -346,13 +339,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            return Ok();
 		        }
             }
+
+            //Callback Query
 		    else if (update.Type == UpdateType.CallbackQuery)
 		    {
 		        long chatId = update.CallbackQuery.Message.Chat.Id;
                 TelegramKeybord keybord = new TelegramKeybord();
 		        DateTime now = DateTime.Now.Date;
+                Schedule schedule = new Schedule();
+		        HomeWorkLogic homeWork = new HomeWorkLogic();
 
-		        string[][] homeworkCancelButton =
+                string[][] homeworkCancelButton =
 		        {
 		            new[] {"Отменить"}
 		        };
@@ -361,7 +358,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		        {
 		            new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"},
 		            new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"}
-		        };
+                };
 
                 string [][] homeworkText =
 		        {
@@ -384,512 +381,98 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 		        string[][] homeworkCancelCallbackData =
 		        {
-		            new[] {"Cancel"}
+		            new[] {"000"}
 		        };
 
                 string[][] scheduleCallbackData =
 		        {
-		            new[] {"Mo1", "Tu1", "We1", "Th1", "Fr1", "Sa1"},
-		            new[] {"Mo2", "Tu2", "We2", "Th2", "Fr2", "Sa2"}
-		        };
+		            new[] {"110", "120", "130", "140", "150", "160"},
+		            new[] {"210", "220", "230", "240", "250", "260"}
+                };
 
 		        string[][] homeworkCallbackData =
 		        {
-		            new[] { "m6?","m5?", "m4?"},
-		            new[] {"m3?", "m2?", "m1?"},
-		            new[] {"mp?","p1?", "p2?"},
-		            new[] {"p3?", "p4?", "p5?"},
-		            new[] { "p6?", "p7?" }
+		            new[] { "461","451", "441"},
+		            new[] {"431", "421", "411"},
+		            new[] {"400","410", "420"},
+		            new[] {"430", "440", "450"},
+		            new[] { "460", "470" }
                 };
 
-                InlineKeyboardMarkup inlineScheduleKeyboard = keybord.GetInlineKeyboard(scheduleText, scheduleCallbackData, 2);
-		        InlineKeyboardMarkup inlineHomeworkKeyboard = keybord.GetInlineKeyboard(homeworkText, homeworkCallbackData, 5);
-		        InlineKeyboardMarkup homeworkCancelKeyboard = keybord.GetInlineKeyboard(homeworkCancelButton, homeworkCancelCallbackData, 1);
+                InlineKeyboardMarkup inlineScheduleKeyboard = keybord.GetInlineKeyboard(scheduleText, scheduleCallbackData);
+		        InlineKeyboardMarkup inlineHomeworkKeyboard = keybord.GetInlineKeyboard(homeworkText, homeworkCallbackData);
+		        InlineKeyboardMarkup homeworkCancelKeyboard = keybord.GetInlineKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
 
-                switch (update.CallbackQuery.Data)
+                /* CallbackQuery.Data представляет из себя трехзначное число abc
+                    a = [0,4], где 0 - отмена, 1 - просмотр расписания верхней недели, 2 - просмотр расписания нижней недели, 3 - добавление ДЗ, 4 - просмотр ДЗ
+                    b1, b2 = [1,7], где 1 - понедельник, 2 - вторник, .. , 7 - воскресенье
+                    b3, b4 = [0,7], где 0 - ноль дней от текущей даты, 1 - один день от текущей даты, ..
+                    c1, c2 = 0
+                    c3, c4 = 0 - плюс день, 1 - минус день
+                    b0, с0 = 0
+                    */
+
+                int a = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[0]));
+		        int b = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[1]));
+                int c = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[2]));
+
+                if (a == 0)
+		        {
+		            Dz = false;
+		            Date = String.Empty;
+		            await botClient.EditMessageTextAsync(chatId,
+		                update.CallbackQuery.Message.MessageId, "Ввод задания отменен");
+		            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+		        }
+                else if (a == 1 || a == 2)
+		        {
+		            string result = schedule.ScheduleOnTheDay(chatId, a, b);
+		            await botClient.EditMessageTextAsync(chatId,
+		                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
+		            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                }
+                else if (a == 3)
                 {
-                       /* Обработчики кнопок расписания*/
-                    case "Mo1":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 1, 1);
-                            await botClient.EditMessageTextAsync(chatId,
-                  update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Tu1":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 1, 2);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "We1":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 1, 3);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Th1":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 1, 4);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Fr1":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 1, 5);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Sa1":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 1, 6);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Mo2":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 2, 1);
-                            await botClient.EditMessageTextAsync(chatId,
-                        update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Tu2":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 2, 2);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "We2":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 2, 3);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Th2":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 2, 4);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Fr2":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 2, 5);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "Sa2":
-                        {
-                            string result = ScheduleOnTheDay(chatId, userDb, 2, 6);
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-
-                    /* Обработчики кнопок Добавления ДЗ*/
-
-                    case "m6":
-                    {
-                            await botClient.EditMessageTextAsync(chatId,
-                  update.CallbackQuery.Message.MessageId, AddHomework(-6), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m5":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-5), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m4":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-4), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m3":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-3), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m2":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-2), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m1":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-1), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "mp":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(0), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p1":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(1), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p2":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(2), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p3":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(3), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p4":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(4), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p5":
-                        {
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(5), replyMarkup: homeworkCancelKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p6":
-                    {
+                    if (c == 0)
                         await botClient.EditMessageTextAsync(chatId,
-                            update.CallbackQuery.Message.MessageId, AddHomework(6), replyMarkup: homeworkCancelKeyboard);
-                        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                        break;
-                        }
-                    case "p7":
-                    {
+                            update.CallbackQuery.Message.MessageId, AddHomework(b), replyMarkup: homeworkCancelKeyboard);
+                    else if (c == 1)
                         await botClient.EditMessageTextAsync(chatId,
-                            update.CallbackQuery.Message.MessageId, AddHomework(7), replyMarkup: homeworkCancelKeyboard);
-                        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                        break;
-                        }
+                            update.CallbackQuery.Message.MessageId, AddHomework(-b), replyMarkup: homeworkCancelKeyboard);
+                    await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                }
+                else if (a == 4)
+                {
+                    string result = String.Empty;
+                    if (c == 0)
+                        result = homeWork.SendHomework(chatId, b);
+                    else if (c == 1)
+                        result = homeWork.SendHomework(chatId, -b);
 
-                    case "Cancel":
+                    if (result == update.CallbackQuery.Message.Text)
                     {
-                        Dz = false;
-                        Date = String.Empty;
-                            await botClient.EditMessageTextAsync(chatId,
-                            update.CallbackQuery.Message.MessageId, "Ввод задания отменен");
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                          break;
                     }
-                    /* Обработчики кнопок Просмотра ДЗ*/
-
-                    case "m6?":
+                    else
                     {
-                        string result = SendHomework(chatId, -6);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m5?":
-                        {
-                            string result = SendHomework(chatId, -5);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m4?":
-                        {
-                            string result = SendHomework(chatId, -4);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m3?":
-                        {
-                            string result = SendHomework(chatId, -3);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m2?":
-                        {
-                            string result = SendHomework(chatId, -2);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "m1?":
-                        {
-                            string result = SendHomework(chatId, -1);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "mp?":
-                        {
-                            string result = SendHomework(chatId, 0);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p1?":
-                        {
-                            string result = SendHomework(chatId, 1);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p2?":
-                        {
-                            string result = SendHomework(chatId, 2);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p3?":
-                        {
-                            string result = SendHomework(chatId, 3);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p4?":
-                        {
-                            string result = SendHomework(chatId, 4);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p5?":
-                        {
-                            string result = SendHomework(chatId, 5);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p6?":
-                        {
-                            string result = SendHomework(chatId, 6);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
-                    case "p7?":
-                        {
-                            string result = SendHomework(chatId, 7);
-                            if (result == update.CallbackQuery.Message.Text)
-                            {
-                                await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                                break;
-                            }
-                            await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
-                            await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
-                            break;
-                        }
+                        await botClient.EditMessageTextAsync(chatId,
+                            update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
+                        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                    }
+                   
                 }
             }
-
 
             return Ok();
 		}
 
-        private string ConvertToCorrectTimeFormat(string time)
-        {
-            var firstTime = time.Split(" - ").First();
-            var secondTime = time.Split(" - ").Last();
-
-            return firstTime.Substring(0, firstTime.LastIndexOf(':')) + " - "                       
-                + secondTime.Substring(0, secondTime.LastIndexOf(':'));
-        }
-
-
-        private string ScheduleOnTheDay(long chatId, UserDb userDb, int weekNum, int day)
-        {
-            string result = "Расписание на "+ ConvertWeekDayToRussian(day);
-            if (weekNum == 1)
-                result += " верхней недели\n \n";
-            else
-                result += " нижней недели\n \n";
-
-
-            ScheduleDB schedule = new ScheduleDB();
-
-		                ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
-		                    userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-		                    userDb.CheckUserElements(chatId, "group"), weekNum, day);
-
-            List<Lesson> listPar = scheduleDay.Lesson.ToList();
-
-            string lessons = "";
-		                foreach (Lesson item in listPar)
-		                {
-		                    lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name +
-		                              "\n" + item.Room + "\n\n";
-		                }
-
-            if (lessons != "")
-            {
-                result += lessons;
-                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
-                if (weekNumNow == 1)
-                    result += "\nСейчас идет верхняя неделя";
-                else
-                    result += "\nСейчас идет нижняя неделя";
-                return result;
-            }
-
-            return "Учебы нет";
-        }
-
-        public string DateConverter(DateTime date)
+        private string DateConverter(DateTime date)
         {
             string shortdate = date.ToShortDateString();
             string month = shortdate.Split(".")[1];
             string day = shortdate.Split(".")[0];
 
             return day + "." + month;
-        }
-
-        private string SendHomework(long chatId, int daysfromtoday)
-        {
-            DateTime now = DateTime.Now.Date;
-            HomeWorkDB homeWork = new HomeWorkDB();
-            string result = "Домашнее задание на ";
-            if (daysfromtoday < 0)
-                result += DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)))+ "\n \n" + homeWork.GetHomeWork(userDb.CheckUserElements(chatId, "university"),
-                    userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                    userDb.CheckUserElements(chatId, "group"), DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)))) +
-                "\nСегодня " + DateConverter(now);
-            else if (daysfromtoday == 0)
-            {
-                result += DateConverter(now)+ "\n \n" + homeWork.GetHomeWork(userDb.CheckUserElements(chatId, "university"),
-                              userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                              userDb.CheckUserElements(chatId, "group"), DateConverter(now)) +
-                          "\nСегодня " + DateConverter(now); 
-            }
-            else if (daysfromtoday > 0)
-            {
-                result += DateConverter(now.AddDays(daysfromtoday))+ "\n \n" + homeWork.GetHomeWork(userDb.CheckUserElements(chatId, "university"),
-                              userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                              userDb.CheckUserElements(chatId, "group"), DateConverter(now.AddDays(daysfromtoday))) +
-                          "\nСегодня " + DateConverter(now);
-            }
-            return result;
         }
 
         private string AddHomework(int daysfromtoday)
@@ -910,26 +493,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             return "Введите текст домашнего задания и отправьте его как обычное сообщение";
         }
 
-        private string ConvertWeekDayToRussian(int weekDay)
-        {
-            switch (weekDay)
-            {
-                case 1:
-                    return "понедельник";
-                case 2:
-                    return "вторник";
-                case 3:
-                    return "среду";
-                case 4:
-                    return "четверг";
-                case 5:
-                    return "пятницу";
-                case 6:
-                    return "субботу";
-
-            }
-
-            return "";
-        }
+       
 	}
 }
