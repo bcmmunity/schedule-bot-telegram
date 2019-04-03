@@ -141,14 +141,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            List<string> un = scheduleDb.GetGroups(userDb.CheckUserElements(chatId, "university"),
 		                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"));
 
-		            string[][] unn = new string[un.ToList().Count][];
+		            int unnLength = un.ToList().Count;
+		            string[][] unn = unnLength % 2 == 0 ? new string[unnLength / 2][] : new string[unnLength / 2 + 1][];
 
 		            int count = 0;
-		            //foreach (string item in un)
-		            //{
-		            //    unn[count] = new[] {item};
-		            //    count++;
-		            //}
 
                     for (int i = 0; i<un.Count; i+=2)
                     {
