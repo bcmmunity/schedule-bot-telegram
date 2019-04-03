@@ -144,14 +144,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 		            string[][] unn = new string[un.ToList().Count][];
 
 		            int count = 0;
-		            foreach (string item in un)
-		            {
-		                unn[count] = new[] {item};
-		                count++;
-		            }
+		            //foreach (string item in un)
+		            //{
+		            //    unn[count] = new[] {item};
+		            //    count++;
+		            //}
 
-		            //await botClient.SendTextMessageAsync(chatId, "Теперь выбери группу", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
-		            await botClient.SendStickerAsync(chatId, groupSticker, replyMarkup: keybord.GetKeyboard(unn));
+                    for (int i = 0; i<un.Count; i+=2)
+                    {
+                        if (i == un.Count - 1)
+                            unn[count] = new[] { un[i] }; //элементов нечетное кол-во
+                        else
+                            unn[count] = new[] { un[i], un[i + 1] }; 
+                        count++;
+                    }
+
+                    //await botClient.SendTextMessageAsync(chatId, "Теперь выбери группу", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
+                    await botClient.SendStickerAsync(chatId, groupSticker, replyMarkup: keybord.GetKeyboard(unn));
 		            return Ok();
 		        }
 
