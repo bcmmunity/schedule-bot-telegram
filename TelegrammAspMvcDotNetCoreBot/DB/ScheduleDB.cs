@@ -7,7 +7,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 {
 	public class ScheduleDB
 	{
-	    public static MyContext Db;
+        public MyContext Db { get; }
 
         public ScheduleDB()
         {

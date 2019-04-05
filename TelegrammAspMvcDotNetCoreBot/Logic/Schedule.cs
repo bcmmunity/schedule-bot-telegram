@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TelegrammAspMvcDotNetCoreBot.DB;
+using TelegrammAspMvcDotNetCoreBot.Logic.Parsers;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
@@ -11,12 +12,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 	{
 		public void ScheduleUpdate()
 		{
-            ExcelParser parserToDB = new ExcelParser();
-            parserToDB.ReadXls("ИТАСУ");
-            parserToDB.ReadXls("ИНМИН");
-            parserToDB.ReadXlsx("МГИ");
-            parserToDB.ReadXls("ЭУПП");
-            parserToDB.ReadXls("ЭкоТех");
+            //MisisParser parserToDB = new MisisParser();
+            //parserToDB.ReadXls("ИТАСУ");
+            //parserToDB.ReadXls("ИНМИН");
+            //parserToDB.ReadXlsx("МГИ");
+            //parserToDB.ReadXls("ЭУПП");
+            //parserToDB.ReadXls("ЭкоТех");
+
+            MendleevParser mendleevParser = new MendleevParser();
+                mendleevParser.ReadXlsx("1 course");
 
         }
 

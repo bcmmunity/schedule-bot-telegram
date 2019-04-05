@@ -1,16 +1,16 @@
-﻿using NPOI.HSSF.UserModel;
+﻿using System.Collections.Generic;
+using System.IO;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using System.Collections.Generic;
-using System.IO;
 using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
-namespace TelegrammAspMvcDotNetCoreBot.Logic
+namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 {
-    public class ExcelParser
+    public class MisisParser
 	{
-	    private static readonly ScheduleDB Schedule = new ScheduleDB();
+	    private readonly ScheduleDB Schedule = new ScheduleDB();
         public void ReadXls(string fileName)
 		{
             //ScheduleController.CheckFile();
@@ -19,7 +19,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 		    Schedule.AddFacility("мисис", fileName);
 
 			HSSFWorkbook hssfwb;
-			using (FileStream file = new FileStream(@"" + fileName + ".xls", FileMode.Open, FileAccess.Read))
+			using (FileStream file = new FileStream(@"Schedule Files\Misis\" + fileName + ".xls", FileMode.Open, FileAccess.Read))
 			{
 				hssfwb = new HSSFWorkbook(file);
 			}
@@ -132,7 +132,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
 
 			XSSFWorkbook hssfwb;
-			using (FileStream file = new FileStream(@"" + fileName + ".xlsx", FileMode.Open, FileAccess.Read))
+			using (FileStream file = new FileStream(@"Schedule Files\Misis\" + fileName + ".xlsx", FileMode.Open, FileAccess.Read))
 			{
 				hssfwb = new XSSFWorkbook(file);
 			}
