@@ -12,15 +12,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 	{
 		public void ScheduleUpdate()
 		{
-            //MisisParser parserToDB = new MisisParser();
-            //parserToDB.ReadXls("ИТАСУ");
-            //parserToDB.ReadXls("ИНМИН");
-            //parserToDB.ReadXlsx("МГИ");
-            //parserToDB.ReadXls("ЭУПП");
-            //parserToDB.ReadXls("ЭкоТех");
+            MisisParser misisParser = new MisisParser();
+            misisParser.ReadXls("ИТАСУ");
+            misisParser.ReadXls("ИНМИН");
+            misisParser.ReadXlsx("МГИ");
+            misisParser.ReadXls("ЭУПП");
+            misisParser.ReadXls("ЭкоТех");
 
             MendleevParser mendleevParser = new MendleevParser();
-                mendleevParser.ReadXlsx("1 course");
+		    mendleevParser.ReadXlsx("1 course");
+		    mendleevParser.ReadXlsx("2 course");
+		    mendleevParser.ReadXlsx("3 course");
+		    mendleevParser.ReadXlsx("4 course");
+		    mendleevParser.ReadXlsx("5 course");
+		    mendleevParser.ReadXlsx("6 course");
 
         }
 

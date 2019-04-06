@@ -34,8 +34,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                 ISheet sheet = scheduleWorkbook.GetSheetAt(sheetNumber);
 
-                if (sheet.GetRow(0).GetCell(1) == null)
-                    break;
+                try
+                {
+                    if (sheet.GetRow(0).GetCell(1).StringCellValue == "")
+                        break;
+                }
+                catch
+                {
+                        break;
+                }
+                
 
                  int row = 3;
                  int cell = 10;
@@ -44,14 +52,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 while (sheet.GetRow(row-1).GetCell(cell + 1) != null) // перебор всех групп
                 {
                     Schedule.AddFacility("им.Менделеева", 
-                        sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0] + "-"+ fileName[0]);
+                        GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]));
 
-                    Schedule.AddCourse("им.Менделеева", 
-                        sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0] + "-" + fileName[0], 
+                    Schedule.AddCourse("им.Менделеева",
+                        GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), 
                         fileName[0].ToString());
 
-                    Schedule.AddGroup("им.Менделеева", 
-                        sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0] + "-" + fileName[0],
+                    Schedule.AddGroup("им.Менделеева",
+                        GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]),
                         fileName[0].ToString(),
                         sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue);
 
@@ -106,16 +114,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                             {
                                 endTime = sheet.GetRow(row).GetCell(1).StringCellValue;
 
-                               
-                                if ((sheet.GetRow(row + 1).GetCell(cell + 1).StringCellValue == "") 
-                                    && !sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
-                                    || (sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
-                                    && sheet.GetRow(row + 1).GetCell(cell + 1) != null)
-                                    || lessonIndex == 9) //если снизу находится часть объединения ячеек или блок кончился, то можно запоминать последнее время и сохранять
+                                try
                                 {
-                                    isFind = true;
-                                    DayAdd(sheet,rowBufer,cell, GetTime(startTime, endTime), day1,day2);
+                                    if ((sheet.GetRow(row + 1).GetCell(cell + 1).StringCellValue == "")
+                                        && !sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
+                                        || (sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
+                                            && sheet.GetRow(row + 1).GetCell(cell + 1) != null)
+                                        || lessonIndex == 9) //если снизу находится часть объединения ячеек или блок кончился, то можно запоминать последнее время и сохранять
+                                    {
+                                        isFind = true;
+                                        DayAdd(sheet, rowBufer, cell, GetTime(startTime, endTime), day1, day2);
+                                    }
                                 }
+                                catch
+                                {
+                                    continue;
+                                }
+                                
 
                             }
 
@@ -128,8 +143,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                     row = 3;
 
-                    Schedule.AddScheduleWeek("им.Менделеева", sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0] + "-" + fileName[0], fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week1);
-                    Schedule.AddScheduleWeek("им.Менделеева", sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0] + "-" + fileName[0], fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week2);
+                    Schedule.AddScheduleWeek("им.Менделеева", GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week1);
+                    Schedule.AddScheduleWeek("им.Менделеева", GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week2);
 
                     cell += 4;
                  }
@@ -231,6 +246,54 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
             string[] result = {a1, a2};
             return result;
+        }
+
+        private string GetFacility(string abbriviature)
+        {
+            switch (abbriviature)
+            {
+                case "П":
+                    return "НПМ";
+                case "Н":
+                    return "ТНВиВМ";
+                case "О":
+                    return "ХФТ";
+                case "ТМ":
+                    return "ФИХ";
+                case "Тм":
+                    return "ФИХ";
+                case "И":
+                    return "ИХТ";
+                case "К":
+                    return "ИТУ";
+                case "КС":
+                    return "ИТУ";
+                case "Кс":
+                    return "ИТУ";
+                case "Э":
+                    return "БПЭ";
+                case "ЭК":
+                    return "ГФ";
+                case "Эк":
+                    return "ГФ";
+                case "ПР":
+                    return "ИПУР";
+                case "Пр":
+                    return "ИПУР";
+                case "А":
+                    return "ИПУР";
+                case "ЕН":
+                    return "ФЕН";
+                case "Ен":
+                    return "ФЕН";
+                case "Ф":
+                    return "ИСМЭН-ИФХ";
+                case "Юр":
+                    return "Гуманитарный";
+            }
+
+            return "Другое";
+
         }
     }
 }
