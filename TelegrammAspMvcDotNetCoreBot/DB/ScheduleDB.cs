@@ -92,7 +92,6 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 		}
 		
 
-
 		public bool IsUniversityExist(string university)
 		{
             University universitym = Db.Universities.FirstOrDefault(m => m.Name == university);
