@@ -1,0 +1,9 @@
+DROP TABLE dbo.HomeWorks
+DROP TABLE dbo.Lessons
+DROP TABLE dbo.ScheduleDays
+DROP TABLE dbo.ScheduleWeeks
+DROP TABLE dbo.Users
+DROP TABLE dbo.Groups
+DROP TABLE dbo.Courses
+DROP TABLE dbo.Facilities
+DROP TABLE dbo.Universities
