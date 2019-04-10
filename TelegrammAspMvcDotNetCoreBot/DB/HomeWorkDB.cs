@@ -8,11 +8,11 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 {
     public class HomeWorkDB
     {
-       public static MyContext Db;
+       private readonly MyContext _db;
         
         public HomeWorkDB()
         {
-            Db = new DB().Connect();
+            _db = new DB().Connect();
         }
 
         /// <summary>
@@ -25,14 +25,14 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             {
                 string mainGroup = groupName.Split(' ').First();
 
-                University universitym = Db.Universities.FirstOrDefault(m => m.Name == university);
-                Facility facultym = Db.Facilities.Where(l => l.University == universitym)
+                University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+                Facility facultym = _db.Facilities.Where(l => l.University == universitym)
                     .FirstOrDefault(t => t.Name == faculty);
-                Course coursem = Db.Courses.Where(o => o.Facility == facultym)
+                Course coursem = _db.Courses.Where(o => o.Facility == facultym)
                     .FirstOrDefault(t => t.Name == course);
 
                 List<Group> @group = new List<Group>();
-                @group = Db.Groups.Where(g => g.Course == coursem).Where(t => t.Name.Contains(mainGroup)).ToList();
+                @group = _db.Groups.Where(g => g.Course == coursem).Where(t => t.Name.Contains(mainGroup)).ToList();
 
                 foreach (var itemGroup in @group)
                 {
@@ -41,8 +41,8 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                     homeWork.HomeWorkText = text;
 
                     homeWork.Group = itemGroup;
-                    Db.HomeWorks.Add(homeWork);
-                    Db.SaveChanges();
+                    _db.HomeWorks.Add(homeWork);
+                    _db.SaveChanges();
                 }
             }
         }
@@ -73,7 +73,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             string result = "";
             if (new ScheduleDB().IsGroupExist(university, faculty, course, groupName))
             {
-                List<HomeWork> homeWorks = Db.HomeWorks.Where(m => m.Date == date).Where(n => n.Group.Name == groupName).ToList();
+                List<HomeWork> homeWorks = _db.HomeWorks.Where(m => m.Date == date).Where(n => n.Group.Name == groupName).ToList();
 
 
                 //homeWork = (from kl in Db.HomeWorks
@@ -120,17 +120,17 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             DateTime now = DateTime.Now;
           //  DateTime twoWeeksAgo;
 //            TimeSpan dif = now - twoWeeksAgo;
-            foreach (var h in Db.HomeWorks)
+            foreach (var h in _db.HomeWorks)
             {
                 DateTime homeWorkOnDelete = DateTime.Parse(h.Date);
                 TimeSpan dif = now - homeWorkOnDelete;
                 if (dif.Days > 14)
                 {
-                    Db.HomeWorks.Remove(h);
+                    _db.HomeWorks.Remove(h);
                 }
             }
 
-            Db.SaveChanges();
+            _db.SaveChanges();
 
         }
     }

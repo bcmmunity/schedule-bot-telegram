@@ -54,7 +54,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             });
 
             //Bot Configuration
-            //Bot.GetBotClientAsync().Wait();
+             Bot.GetBotClientAsync().Wait();
         }
     }
 }

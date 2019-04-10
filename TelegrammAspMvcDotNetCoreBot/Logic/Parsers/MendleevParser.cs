@@ -75,6 +75,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                     {
                         ScheduleDay day1 = new ScheduleDay();
                         ScheduleDay day2 = new ScheduleDay();
+
+                        day1.Day = weekDay;
+                        day1.Lesson = new List<Lesson>();
+                        day2.Day = weekDay;
+                        day2.Lesson = new List<Lesson>();
+
                         bool isFind = true; //определяет, найдены ли все куски склеенной ячейки
 
                         string startTime = String.Empty;
@@ -177,12 +183,36 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                 string name1 = StringSeparator(name,')')[0];
                 string name2 = StringSeparator(name,')')[1];
-            
-                string lessonType1 = StringSeparator(lessonType,' ')[0];
-                string lessonType2 = StringSeparator(lessonType,' ')[1];
 
-                string room1 = StringSeparator(room, ' ')[0];
-                string room2 = StringSeparator(room, ' ')[1];
+                string lessonType1 = String.Empty;
+                string lessonType2 = String.Empty;
+
+            string room1 = String.Empty;
+            string room2 = String.Empty;
+            if (name2 != "")
+            {
+                lessonType1 = StringSeparator(lessonType, ' ')[0];
+                lessonType2 = StringSeparator(lessonType, ' ')[1];
+
+                room1 = StringSeparator(room, ' ')[0];
+                room2 = StringSeparator(room, ' ')[1];
+            }
+            else if (name1 == "Иностранный язык")
+            {
+                lessonType1 = lessonType;
+                lessonType2 = lessonType;
+
+                room1 = StringSeparator(room, ' ')[0];
+                room2 = StringSeparator(room, ' ')[1];
+            }
+            else
+            {
+                lessonType1 = lessonType;
+                lessonType2 = lessonType;
+
+                room1 = room;
+                room2 = room;
+            }
 
             string fullName1 = name1 + " " + lessonType1;
                 string fullName2 = name2 + " " + lessonType2;
@@ -199,14 +229,30 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
             if (a.Name == "")
                 return;
 
-            if (a.Name.Contains("1 "))
+            if (name1.Contains("(1"))
                 day1.Lesson.Add(a);
-            else if (a.Name.Contains("2 "))
+            else if (name1.Contains("(2"))
                 day2.Lesson.Add(a);
             else
             {
                 day1.Lesson.Add(a);
-                day2.Lesson.Add(a);
+                if (room2 != "")
+                {
+                    Lesson x = new Lesson()
+                    {
+                        Name = fullName1,
+                        Number = lessonNumber.ToString(),
+                        Time = time,
+                        Room = room2,
+                        Teacher = ""
+                    };
+                    day2.Lesson.Add(x);
+                }
+                else
+                {
+                    day2.Lesson.Add(a);
+                }
+
                 return;
             }
 
@@ -225,10 +271,42 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 if (b.Name == "")
                     return;
 
-                if (b.Name.Contains("1 "))
-                    day1.Lesson.Add(b);
-                else if (b.Name.Contains("2 "))
-                    day2.Lesson.Add(b);
+                if (name2.Contains("(1"))
+                {
+                    if (room1 == "")
+                    {
+                        Lesson x = new Lesson()
+                        {
+                            Name = fullName2,
+                            Number = lessonNumber.ToString(),
+                            Time = time,
+                            Room = room2,
+                            Teacher = ""
+                        };
+                        day1.Lesson.Add(x);
+                    }
+                    else
+                        day1.Lesson.Add(b);
+                }
+                   
+                else if (name2.Contains("(2"))
+                {
+                    if (room2 == "")
+                    {
+                        Lesson x = new Lesson()
+                        {
+                            Name = fullName2,
+                            Number = lessonNumber.ToString(),
+                            Time = time,
+                            Room = room1,
+                            Teacher = ""
+                        };
+                        day2.Lesson.Add(x);
+                    }
+                    else
+                        day2.Lesson.Add(b);
+                }
+                    
             }
 
 
@@ -240,13 +318,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
         private string[] StringSeparator(string a, char separator)
         {
 
-            bool isFirst = true;
+            int isFirst = 0;
 
             string a1 = String.Empty;
             string a2 = String.Empty;
             foreach (char letter in a)
             {
-                if (isFirst)
+                if (isFirst == 0)
                 {
                     a1 += letter;
                     if (letter == '/')
@@ -255,17 +333,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                         break;
                     }
                     if (letter == separator)
-                        isFirst = false;
+                        isFirst = 1;
+                }
+                else if (isFirst == 1)
+                {
+                    if (letter != ' ')
+                    {
+                        a2 += letter;
+                        isFirst = 2;
+                    }
                 }
                 else
                 {
-                    if (letter == ' ')
-                        continue;
                     a2 += letter;
                 }
             }
 
-            string[] result = {a1, a2};
+            string[] result = {a1.Trim(), a2.Trim()};
             return result;
         }
 
@@ -310,6 +394,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 case "Ф":
                     return "ИСМЭН-ИФХ";
                 case "Юр":
+                    return "Гуманитарный";
+                case "ЮР":
+                    return "Гуманитарный";
+                case "Ю":
                     return "Гуманитарный";
             }
 
