@@ -20,5 +20,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 		public DbSet<Lesson> Lessons { get; set; }
 		public DbSet<HomeWork> HomeWorks { get; set; }
 	    public DbSet<User> Users { get; set; }
-	}
+        public DbSet<ErrorLog> ErrorLogs { get; set; }
+    }
 }

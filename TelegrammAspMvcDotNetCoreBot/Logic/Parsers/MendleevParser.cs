@@ -15,7 +15,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
         public void ReadXlsx(string fileName)
         {
 
-            Schedule.AddUniversity("им.Менделеева");
+            Schedule.AddUniversity("РХТУ им.Менделеева");
             
 
             XSSFWorkbook scheduleWorkbook;
@@ -51,13 +51,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                     if (sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue == "")
                         break;
 
-                        Schedule.AddFacility("им.Менделеева", 
+                        Schedule.AddFacility("РХТУ им.Менделеева", 
                         GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]));
 
-                    Schedule.AddCourse("им.Менделеева",
+                    Schedule.AddCourse("РХТУ им.Менделеева",
                         GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), 
                         fileName[0].ToString());
-                        Schedule.AddGroup("им.Менделеева",
+                        Schedule.AddGroup("РХТУ им.Менделеева",
                             GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]),
                                     fileName[0].ToString(),
                                     sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue);
@@ -88,8 +88,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                         int rowBufer = 0;
 
-                        int lessonNumber = 1;
-
                         for (int lessonIndex = 0; lessonIndex < 10; lessonIndex++) //перебор всех пар в дне
                         {
                             if (sheet.GetRow(row).GetCell(cell) == null)
@@ -110,10 +108,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                                         && sheet.GetRow(row + 1).GetCell(cell + 1).StringCellValue
                                         == "") //если снизу находится нижняя часть ячейки, то она объединенная
                                         isFind = false;
+                                    else if (sheet.GetRow(row).GetCell(cell + 1).StringCellValue
+                                             != "")
+                                    {
+                                        AddDay(sheet, row, cell, GetTime(startTime, endTime), GetLessonNumber(GetTime(startTime, startTime)), day1, day2); //Одна ячейка
+                                    }
                                 }
                                 catch
                                 {
-                            continue;
+                                    continue;
                                 }
                                 
                             }
@@ -123,16 +126,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                                 try
                                 {
-                                    if ((sheet.GetRow(row + 1).GetCell(cell + 1).StringCellValue == "")
-                                        && !sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
+                                    if ( !sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
                                         || (sheet.GetRow(row + 1).GetCell(cell + 1).IsMergedCell
                                             && sheet.GetRow(row + 1).GetCell(cell + 1).StringCellValue != "")
                                         || lessonIndex == 9) //если снизу находится часть объединения ячеек или блок кончился, то можно запоминать последнее время и сохранять
                                     {
                                         isFind = true;
-                                        AddDay(sheet, rowBufer, cell, GetTime(startTime, endTime), lessonNumber, day1, day2);
-                                        lessonNumber++;
+                                        AddDay(sheet, rowBufer, cell, GetTime(startTime, endTime), GetLessonNumber(GetTime(startTime, startTime)), day1, day2);
                                     }
+
                                 }
                                 catch
                                 {
@@ -148,13 +150,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                         week1.Day.Add(day1);
                         week2.Day.Add(day2);
-                        lessonNumber = 1;
                     }
 
                     row = 3;
 
-                    Schedule.AddScheduleWeek("им.Менделеева", GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week1);
-                    Schedule.AddScheduleWeek("им.Менделеева", GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week2);
+                    Schedule.AddScheduleWeek("РХТУ им.Менделеева", GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week1);
+                    Schedule.AddScheduleWeek("РХТУ им.Менделеева", GetFacility(sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue.Split('-')[0]), fileName[0].ToString(), sheet.GetRow(row - 1).GetCell(cell + 1).StringCellValue, week2);
 
                     cell += 4;
                  }
@@ -166,8 +167,62 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
             return startTime.Split('-')[0]+":00 - "+endTime.Split('-')[1]+":00";
         }
 
-        private void AddDay(ISheet sheet, int row, int cell, string time, int lessonNumber, ScheduleDay day1, ScheduleDay day2)
+        private int GetLessonNumber(string lessonTime)
         {
+            DateTime time = DateTime.Parse(lessonTime.Split('-')[0]);
+
+            if (time >= DateTime.Parse("9:00:00") && time <= DateTime.Parse("10:35:00"))
+                return 1;
+            if (time >= DateTime.Parse("10:45:00") && time <= DateTime.Parse("12:20:00"))
+                return 2;
+            if (time >= DateTime.Parse("13:00:00") && time <= DateTime.Parse("14:35:00"))
+                return 3;
+            if (time >= DateTime.Parse("14:45:00") && time <= DateTime.Parse("16:20:00"))
+                return 4;
+            if (time >= DateTime.Parse("16:30:00") && time <= DateTime.Parse("18:05:00"))
+                return 5;
+
+            return 0;
+        }
+
+        private void AddDay(ISheet sheet, int row, int cell, string time, int lessonNumber, ScheduleDay day1, ScheduleDay day2, bool onlyOne = false)
+        {
+            if (onlyOne)
+            {
+                string roomx = String.Empty;
+                try //определение, цифра ли кабинет или слово
+                {
+                    roomx = sheet.GetRow(row).GetCell(cell).StringCellValue;
+                }
+                catch
+                {
+                    roomx = sheet.GetRow(row).GetCell(cell).NumericCellValue.ToString();
+                }
+
+                string namex = sheet.GetRow(row).GetCell(cell + 1).StringCellValue;
+                string lessonTypex = sheet.GetRow(row).GetCell(cell + 2).StringCellValue;
+                string fullNamex = namex + " " + lessonTypex;
+     
+                Lesson ax = new Lesson()
+                {
+                    Name = fullNamex,
+                    Number = lessonNumber.ToString(),
+                    Time = time,
+                    Room = roomx,
+                    Teacher = ""
+                };
+
+                if (ax.Name == "")
+                    return;
+
+                
+                    day1.Lesson.Add(ax);
+                    day2.Lesson.Add(ax);
+                    
+
+                    return;
+            }
+             
             string room = String.Empty;
             try //определение, цифра ли кабинет или слово
             {
@@ -187,31 +242,72 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 string lessonType1 = String.Empty;
                 string lessonType2 = String.Empty;
 
-            string room1 = String.Empty;
-            string room2 = String.Empty;
-            if (name2 != "")
-            {
-                lessonType1 = StringSeparator(lessonType, ' ')[0];
-                lessonType2 = StringSeparator(lessonType, ' ')[1];
-
+                string room1 = String.Empty;
+                string room2 = String.Empty;
+                if (room.Contains('/'))
+                {
+                    room1 = StringSeparator(room, '/')[0];
+                    room2 = StringSeparator(room, '/')[1];
+            }
+                else
+                {
                 room1 = StringSeparator(room, ' ')[0];
                 room2 = StringSeparator(room, ' ')[1];
             }
-            else if (name1 == "Иностранный язык")
-            {
-                lessonType1 = lessonType;
-                lessonType2 = lessonType;
+               
 
-                room1 = StringSeparator(room, ' ')[0];
-                room2 = StringSeparator(room, ' ')[1];
+            if (name2 != "")
+            {
+                if (lessonType.Contains('/'))
+                {
+                    lessonType1 = StringSeparator(lessonType, '/')[0];
+                    lessonType2 = StringSeparator(lessonType, '/')[1];
+                }
+                else
+                {
+                    lessonType1 = StringSeparator(lessonType, ' ')[0];
+                    lessonType2 = StringSeparator(lessonType, ' ')[1];
+                }
+
+                if (lessonType2 == "")
+                {
+                    lessonType2 = sheet.GetRow(row+1).GetCell(cell + 2).StringCellValue;
+                }
+
+                if (room2 == "")
+                {
+                    try //определение, цифра ли кабинет или слово
+                    {
+                        room2 = sheet.GetRow(row+1).GetCell(cell).StringCellValue;
+                    }
+                    catch
+                    {
+                        room2 = sheet.GetRow(row+1).GetCell(cell).NumericCellValue.ToString();
+                    }
+                }
             }
             else
             {
+                if (room2 == "")
+                {
+                    try //определение, цифра ли кабинет или слово
+                    {
+                        room2 = sheet.GetRow(row+1).GetCell(cell).StringCellValue;
+                    }
+                    catch
+                    {
+                        room2 = sheet.GetRow(row+1).GetCell(cell).NumericCellValue.ToString();
+                    }
+                    if (room2 == "0" || room2 == "")
+                    {
+                        room1 = room;
+                        room2 = room;
+                    }                 
+                }
+
                 lessonType1 = lessonType;
                 lessonType2 = lessonType;
-
-                room1 = room;
-                room2 = room;
+       
             }
 
             string fullName1 = name1 + " " + lessonType1;
@@ -327,11 +423,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 if (isFirst == 0)
                 {
                     a1 += letter;
-                    if (letter == '/')
-                    {
-                        a1 = a;
-                        break;
-                    }
                     if (letter == separator)
                         isFirst = 1;
                 }

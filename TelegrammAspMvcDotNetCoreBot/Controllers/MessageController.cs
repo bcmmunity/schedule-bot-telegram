@@ -44,7 +44,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     var chatId = message.Chat.Id;
                     var commands = Bot.Commands;
 
-                    //await botClient.SendTextMessageAsync(chatId, "Бот на профилактике", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                    //await botClient.SendTextMessageAsync(chatId, "Бот на профилактике.\nПлановая дата окончания: 12.04.19 03:00", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     //return Ok();
 
                     foreach (var command in commands)
@@ -57,7 +57,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     }
 
                     if (!userDb.CheckUser(chatId))
+                    {
+                        message.Text = @"/start";
+
+                        foreach (var command in commands)
+                        {
+                            if (command.Contains(message))
+                            {
+                                await command.Execute(message, botClient);
+                                return Ok();
+                            }
+                        }
+
                         return Ok();
+                    }
 
                     InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
                     InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
@@ -481,14 +494,32 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                 if (update != null)
                 {
-                    var message = update.Message;
-                    var chatId = message.Chat.Id;
-                    var botClient = await Bot.GetBotClientAsync();
+                    ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
 
-                    if (chatId == 358243561)
-                        await botClient.SendTextMessageAsync(chatId, e.Message, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
-                    else
+                    if (update.Type == UpdateType.Message)
+                    {
+                        var message = update.Message;
+                        var chatId = message.Chat.Id;
+                        var botClient = await Bot.GetBotClientAsync();
+
                         await botClient.SendTextMessageAsync(chatId, "Хм, что то пошло не так", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+
+                        errorLoggingDb.AddErrorInLog(chatId, "Message", message.Text, e.Message,DateTime.Now);
+
+                    }
+                    else if (update.Type == UpdateType.CallbackQuery)
+                    {
+                        long chatId = update.CallbackQuery.Message.Chat.Id;
+                        var botClient = await Bot.GetBotClientAsync();
+
+                        await botClient.EditMessageTextAsync(chatId,
+                        update.CallbackQuery.Message.MessageId, "Хм, что то пошло не так");
+
+                        errorLoggingDb.AddErrorInLog(chatId, "CallbackQuery", update.CallbackQuery.Data, e.Message, DateTime.Now);
+
+                        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
+                    }
+
 
                 }
 
@@ -522,6 +553,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
             return "Введите текст домашнего задания и отправьте его как обычное сообщение";
         }
+
 
        
 	}
