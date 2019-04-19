@@ -2,10 +2,11 @@ using System.Linq;
 using System.Collections.Generic;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using Microsoft.EntityFrameworkCore;
+using NPOI.OpenXmlFormats.Dml;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
 {
-	public class ScheduleDB
+    public class ScheduleDB
     {
         private readonly MyContext _db;
 
@@ -14,227 +15,227 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             _db = new DB().Connect();
         }
 
-		public void AddUniversity(string name)
-		{
-			if (!IsUniversityExist(name))
-			{
-			    University un = new University {Name = name};
+        public void AddUniversity(string name)
+        {
+            if (!IsUniversityExist(name))
+            {
+                University un = new University {Name = name};
 
-			    _db.Universities.Add(un);
-				_db.SaveChanges();
-			}
-		}
+                _db.Universities.Add(un);
+                _db.SaveChanges();
+            }
+        }
 
-		public void AddFacility(string university, string name)
-		{
-			if (!IsFacilityExist(university, name))
-			{
-			    Facility facility = new Facility
-			    {
-			        Name = name,
-			        University = _db.Universities.FirstOrDefault(n => n.Name == university)
-			    };
+        public void AddFacility(string university, string name)
+        {
+            if (!IsFacilityExist(university, name))
+            {
+                Facility facility = new Facility
+                {
+                    Name = name,
+                    University = _db.Universities.FirstOrDefault(n => n.Name == university)
+                };
 
-			    _db.Facilities.Add(facility);
-				_db.SaveChanges();
-			}
-		}
+                _db.Facilities.Add(facility);
+                _db.SaveChanges();
+            }
+        }
 
-		public void AddCourse(string university, string facility, string name)
-		{
-			if (!IsCourseExist(university, facility, name))
-			{
-			    Course co = new Course
-			    {
-			        Name = name,
-			        Facility = _db.Facilities
-			            .Where(n => n.University == _db.Universities.FirstOrDefault(m => m.Name == university))
-			                                                       .FirstOrDefault(x => x.Name == facility)
-			    };
+        public void AddCourse(string university, string facility, string name)
+        {
+            if (!IsCourseExist(university, facility, name))
+            {
+                Course co = new Course
+                {
+                    Name = name,
+                    Facility = _db.Facilities
+                        .Where(n => n.University == _db.Universities.FirstOrDefault(m => m.Name == university))
+                        .FirstOrDefault(x => x.Name == facility)
+                };
 
-			    _db.Courses.Add(co);
-				_db.SaveChanges();
-			}
-		}
+                _db.Courses.Add(co);
+                _db.SaveChanges();
+            }
+        }
 
-		public void AddGroup(string university, string facility, string course, string name)
-		{
-			if (!IsGroupExist(university, facility, course, name))
-			{
-			    Group gr = new Group
-			    {
-			        Name = name,
-			        Course = _db.Courses.Where(l => l.Facility == _db.Facilities
-			                                           .Where(n => n.University == _db.Universities
-			                                                           .FirstOrDefault(m => m.Name == university))
-			                                           .FirstOrDefault(x => x.Name == facility))
-			            .FirstOrDefault(x => x.Name == course)
-			    };
+        public void AddGroup(string university, string facility, string course, string name)
+        {
+            if (!IsGroupExist(university, facility, course, name))
+            {
+                Group gr = new Group
+                {
+                    Name = name,
+                    Course = _db.Courses.Where(l => l.Facility == _db.Facilities
+                                                        .Where(n => n.University == _db.Universities
+                                                                        .FirstOrDefault(m => m.Name == university))
+                                                        .FirstOrDefault(x => x.Name == facility))
+                        .FirstOrDefault(x => x.Name == course)
+                };
 
-			    _db.Groups.Add(gr);
-				_db.SaveChanges();
-			}
-		}
+                _db.Groups.Add(gr);
+                _db.SaveChanges();
+            }
+        }
 
 
 
-		public void AddScheduleWeek(string university, string facility, string course, string group, ScheduleWeek week)
-		{
-			week.Group = _db.Groups.Where(c => c.Course == _db.Courses
-			                      .Where(ll => ll.Facility == _db.Facilities
-			                      .Where(n => n.University == _db.Universities
-			                      .FirstOrDefault(m => m.Name == university))
-			                      .FirstOrDefault(x => x.Name == facility))
-			                      .FirstOrDefault(x => x.Name == course))
-			                      .FirstOrDefault(v => v.Name == group);
-			_db.ScheduleWeeks.Add(week);
-			_db.SaveChanges();
-		}
-		
+        public void AddScheduleWeek(string university, string facility, string course, string group, ScheduleWeek week)
+        {
+            week.Group = _db.Groups.Where(c => c.Course == _db.Courses
+                                                   .Where(ll => ll.Facility == _db.Facilities
+                                                                    .Where(n => n.University == _db.Universities
+                                                                                    .FirstOrDefault(m =>
+                                                                                        m.Name == university))
+                                                                    .FirstOrDefault(x => x.Name == facility))
+                                                   .FirstOrDefault(x => x.Name == course))
+                .FirstOrDefault(v => v.Name == group);
+            _db.ScheduleWeeks.Add(week);
+            _db.SaveChanges();
+        }
 
-		public bool IsUniversityExist(string university)
-		{
+
+        public bool IsUniversityExist(string university)
+        {
             University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-			bool result = universitym != null;
+            bool result = universitym != null;
 
-			return result;
-		}
+            return result;
+        }
 
-		public bool IsFacilityExist(string university, string facility)
-		{
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+        public bool IsFacilityExist(string university, string facility)
+        {
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-			Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-			                      .FirstOrDefault(t => t.Name == facility);
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
 
-			bool result = facultym != null;
+            bool result = facultym != null;
 
-			return result;
-		}
+            return result;
+        }
 
-		public bool IsCourseExist(string university, string facility, string course)
-		{
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+        public bool IsCourseExist(string university, string facility, string course)
+        {
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-			Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-			                      .FirstOrDefault(t => t.Name == facility);
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
 
-			Course coursem = _db.Courses.Where(o => o.Facility == facultym).FirstOrDefault(t => t.Name == course);
+            Course coursem = _db.Courses.Where(o => o.Facility == facultym).FirstOrDefault(t => t.Name == course);
 
-			bool result = coursem != null;
+            bool result = coursem != null;
 
-			return result;
-		}
+            return result;
+        }
 
-		public bool IsGroupExist(string university, string facility, string course, string group)
-		{
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+        public bool IsGroupExist(string university, string facility, string course, string group)
+        {
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-			Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-			                      .FirstOrDefault(t => t.Name == facility);
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
 
-			Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-			                           .FirstOrDefault(t => t.Name == course);
+            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
+                .FirstOrDefault(t => t.Name == course);
 
-			Group groupm = _db.Groups.Where(n => n.Course == coursem)
-			                        .FirstOrDefault(t => t.Name == group);
+            Group groupm = _db.Groups.Where(n => n.Course == coursem)
+                .FirstOrDefault(t => t.Name == group);
 
-			bool result = groupm != null;
-			
-			return result;
-		}
+            bool result = groupm != null;
+
+            return result;
+        }
 
 
 
-		public List<string> GetUniversities()
-		{
-			List<string> result = new List<string>();
-			List<University> source = _db.Universities.ToList();
+        public List<string> GetUniversities()
+        {
+            List<string> result = new List<string>();
+            List<University> source = _db.Universities.ToList();
 
-			foreach (University item in source)
-			{
-				result.Add(item.Name);
-			}
+            foreach (University item in source)
+            {
+                result.Add(item.Name);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
-		public List<string> GetFacilities(string university)
-		{
-			List<string> result = new List<string>();
+        public List<string> GetFacilities(string university)
+        {
+            List<string> result = new List<string>();
 
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-			
-			List<Facility> source = _db.Facilities.Where(n => n.University == universitym).ToList();
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-			foreach (Facility item in source)
-			{
-				result.Add(item.Name);
-			}
+            List<Facility> source = _db.Facilities.Where(n => n.University == universitym).ToList();
 
-			return result;
-		}
+            foreach (Facility item in source)
+            {
+                result.Add(item.Name);
+            }
 
-		public List<string> GetCourses(string university, string facility)
-		{
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-			Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-			                      .FirstOrDefault(t => t.Name == facility);
-			
-			List<string> result = new List<string>();
-			List<Course> source = _db.Courses.Where(n => n.Facility == facultym).ToList();
+            return result;
+        }
 
-			foreach (Course item in source)
-			{
-				result.Add(item.Name);
-			}
+        public List<string> GetCourses(string university, string facility)
+        {
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
 
-			return result;
-		}
+            List<string> result = new List<string>();
+            List<Course> source = _db.Courses.Where(n => n.Facility == facultym).ToList();
 
-		public List<string> GetGroups(string university, string facility, string course)
-		{
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-			Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-			                      .FirstOrDefault(t => t.Name == facility);
-			Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-			                   .FirstOrDefault(t => t.Name == course);
+            foreach (Course item in source)
+            {
+                result.Add(item.Name);
+            }
 
-			List<string> result = new List<string>();
-			List<Group> source = _db.Groups.Where(n => n.Course == coursem).ToList();
+            return result;
+        }
 
-			foreach (Group item in source)
-			{
-				result.Add(item.Name);
-			}
+        public List<string> GetGroups(string university, string facility, string course)
+        {
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
+            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
+                .FirstOrDefault(t => t.Name == course);
 
-			return result;
-		}
+            List<string> result = new List<string>();
+            List<Group> source = _db.Groups.Where(n => n.Course == coursem).ToList();
 
-		public ScheduleDay GetSchedule(string university, string facility, string course, string group, int week, int day)
-		{
-			University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            foreach (Group item in source)
+            {
+                result.Add(item.Name);
+            }
 
-			Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-			                      .FirstOrDefault(t => t.Name == facility);
+            return result;
+        }
 
-			Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-			                           .FirstOrDefault(t => t.Name == course);
+        public ScheduleDay GetSchedule(string university, string facility, string course, string group, int week,
+            int day)
+        {
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-			Group groupm = _db.Groups.Where(n => n.Course == coursem)
-			                        .FirstOrDefault(t => t.Name == group);
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
 
-			List<ScheduleDay> li = _db.ScheduleWeeks
+            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
+                .FirstOrDefault(t => t.Name == course);
+
+            Group groupm = _db.Groups.Where(n => n.Course == coursem)
+                .FirstOrDefault(t => t.Name == group);
+
+            List<ScheduleDay> li = _db.ScheduleWeeks
                 .Include(v => v.Day)
-			                                       .Where(n => n.Group == groupm)
-			                                       .FirstOrDefault(m => m.Week == week)
-                                                   ?.Day.ToList();
-			
-			return _db.ScheduleDays.Include(r => r.Lesson)
-			                      .FirstOrDefault(f => f.Id == li.FirstOrDefault(n => n.Day == day).Id);
-		}
+                .Where(n => n.Group == groupm)
+                .FirstOrDefault(m => m.Week == week)
+                ?.Day.ToList();
 
-
-	}
+            return _db.ScheduleDays.Include(r => r.Lesson)
+                .FirstOrDefault(f => f.Id == li.FirstOrDefault(n => n.Day == day).Id);
+        }
+    }
 }

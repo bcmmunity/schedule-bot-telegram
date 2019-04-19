@@ -44,6 +44,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     var chatId = message.Chat.Id;
                     var commands = Bot.Commands;
 
+                   
                     //await botClient.SendTextMessageAsync(chatId, "Бот на профилактике.\nПлановая дата окончания: 12.04.19 03:00", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     //return Ok();
 
@@ -71,12 +72,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                         return Ok();
                     }
+                    //Жирные стикеры
+                    //InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
+                    //InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
+                    //InputOnlineFile groupSticker = new InputOnlineFile("CAADAgADBAADi6p7DzzxU-ilYtP6Ag");
+                    //InputOnlineFile workSticker = new InputOnlineFile("CAADAgADBQADi6p7D849HV-BVKxIAg");
+                    //InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADAgADi6p7D_SOcGo7bWCIAg");
 
-                    InputOnlineFile facSticker = new InputOnlineFile("CAADAgADBwADi6p7D7JUJy3u1Q22Ag");
-                    InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADBgADi6p7DxEJvhyK0iHFAg");
-                    InputOnlineFile groupSticker = new InputOnlineFile("CAADAgADBAADi6p7DzzxU-ilYtP6Ag");
-                    InputOnlineFile workSticker = new InputOnlineFile("CAADAgADBQADi6p7D849HV-BVKxIAg");
-                    InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADAgADi6p7D_SOcGo7bWCIAg");
+                    InputOnlineFile facSticker = new InputOnlineFile("CAADAgADEAADi6p7D9f-4MDdLon5Ag");
+                    InputOnlineFile courseSticker = new InputOnlineFile("CAADAgADDwADi6p7D20iVusN4DUzAg");
+                    InputOnlineFile groupSticker = new InputOnlineFile("CAADAgADEwADi6p7D5LIy-MGaXhaAg");
+                    InputOnlineFile workSticker = new InputOnlineFile("CAADAgADDgADi6p7DxKP7piNPfEcAg");
+                    InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADEgADi6p7D-1w9zvhrRKPAg");
 
                     ScheduleDB scheduleDb = new ScheduleDB();
                     HomeWorkDB homeWorkDb = new HomeWorkDB();
@@ -200,8 +207,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         {
                             day = (int)DateTime.Now.DayOfWeek;
                         }
-
-                        string result = schedule.ScheduleOnTheDay(chatId, weekNum, day);
+                        string result = String.Empty;
+                        if (userDb.CheckUserElements(chatId,"university").Contains("МИСиС"))
+                            result= schedule.ScheduleOnTheDay(chatId, weekNum, day, 0);
+                        else
+                            result = schedule.ScheduleOnTheDay(chatId, weekNum, day, 1);
 
                         if (!result.Equals("Учебы нет"))
                             await botClient.SendTextMessageAsync(chatId, result, parseMode: ParseMode.Markdown, replyMarkup: mainKeyboard);
@@ -231,7 +241,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 day = ((int)DateTime.Now.DayOfWeek + 1) % 7;
                         }
 
-                        string result = schedule.ScheduleOnTheDay(chatId, weekNum, day);
+                       string result = String.Empty;
+                        if (userDb.CheckUserElements(chatId,"university").Contains("МИСиС"))
+                            result= schedule.ScheduleOnTheDay(chatId, weekNum, day, 0);
+                        else
+                            result = schedule.ScheduleOnTheDay(chatId, weekNum, day, 1);
 
                         if (!result.Equals("Учебы нет"))
                             await botClient.SendTextMessageAsync(chatId, result, ParseMode.Markdown, replyMarkup: mainKeyboard);
@@ -449,8 +463,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     }
                     else if (a == 1 || a == 2)
                     {
-                        string result = schedule.ScheduleOnTheDay(chatId, a, b);
-                        await botClient.EditMessageTextAsync(chatId,
+                        string result = String.Empty;
+                        if (userDb.CheckUserElements(chatId, "university").Contains("МИСиС"))
+                            result = schedule.ScheduleOnTheDay(chatId, a,b, 0);
+                        else
+                            result = schedule.ScheduleOnTheDay(chatId, a, b, 1);
+                       await botClient.EditMessageTextAsync(chatId,
                             update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                     }

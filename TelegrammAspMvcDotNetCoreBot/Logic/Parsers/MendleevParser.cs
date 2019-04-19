@@ -65,10 +65,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                     ScheduleWeek week1 = new ScheduleWeek();
                     ScheduleWeek week2 = new ScheduleWeek();
 
-                    week1.Week = 1;
+                    week1.Week = 2;
                     week1.Day = new List<ScheduleDay>();
 
-                    week2.Week = 2;
+                    week2.Week = 1;
                     week2.Day = new List<ScheduleDay>();
 
                     for (int weekDay = 1; weekDay <= 6; weekDay++) //перебор всех дней недели
@@ -111,7 +111,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                                     else if (sheet.GetRow(row).GetCell(cell + 1).StringCellValue
                                              != "")
                                     {
-                                        AddDay(sheet, row, cell, GetTime(startTime, endTime), GetLessonNumber(GetTime(startTime, startTime)), day1, day2); //Одна ячейка
+                                        
+                                            AddDay(sheet, row, cell, GetTime(startTime, endTime), GetLessonNumber(GetTime(startTime, startTime)), day1, day2,true);
                                     }
                                 }
                                 catch
@@ -132,7 +133,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                                         || lessonIndex == 9) //если снизу находится часть объединения ячеек или блок кончился, то можно запоминать последнее время и сохранять
                                     {
                                         isFind = true;
-                                        AddDay(sheet, rowBufer, cell, GetTime(startTime, endTime), GetLessonNumber(GetTime(startTime, startTime)), day1, day2);
+                                       
+                                            AddDay(sheet, rowBufer, cell, GetTime(startTime, endTime), GetLessonNumber(GetTime(startTime, startTime)), day1, day2);
+                                       
                                     }
 
                                 }
@@ -201,7 +204,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                 string namex = sheet.GetRow(row).GetCell(cell + 1).StringCellValue;
                 string lessonTypex = sheet.GetRow(row).GetCell(cell + 2).StringCellValue;
-                string fullNamex = namex + " " + lessonTypex;
+                string fullNamex = String.Empty;
+
+                IColor colorx = sheet.GetRow(row).GetCell(cell).CellStyle.FillBackgroundColorColor;
+                if (colorx != null && !namex.Contains("Физическая культура"))
+                {
+                    fullNamex = namex + " " + lessonTypex + " (пара в Тушино)";
+                   
+                }
+                else
+                {
+                    fullNamex = namex + " " + lessonTypex;
+                }
+
+                
      
                 Lesson ax = new Lesson()
                 {
@@ -310,8 +326,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
        
             }
 
-            string fullName1 = name1 + " " + lessonType1;
-                string fullName2 = name2 + " " + lessonType2;
+            string fullName1 = String.Empty;
+            string fullName2 = String.Empty;
+
+            IColor color = sheet.GetRow(row).GetCell(cell).CellStyle.FillForegroundColorColor;
+            if (color?.RGB != null && color.RGB[0] == 204 && color.RGB[1] == 255 && color.RGB[2] == 204)
+            {
+                fullName1 = name1 + " " + lessonType1+" (пара в Тушино)";
+                fullName2 = name2 + " " + lessonType2+ " (пара в Тушино)";
+            }
+            else
+            {
+                fullName1 = name1 + " " + lessonType1;
+                fullName2 = name2 + " " + lessonType2;
+            }
+                
 
             Lesson a = new Lesson()
             {
@@ -490,6 +519,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                     return "Гуманитарный";
                 case "Ю":
                     return "Гуманитарный";
+                case "МН":
+                    return "ТНВиВМ";
+                case "МК":
+                    return "ИТУ";
+                case "МЭ":
+                    return "БПЭ";
+                case "МТ":
+                    return "ФИХ";
+                case "МП":
+                    return "НПМ";
+                case "МО":
+                    return "ХФТ";
+                case "МЕН":
+                    return "ФЕН";
+
             }
 
             return "Другое";

@@ -29,24 +29,58 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
         }
 
-        public string ScheduleOnTheDay(long chatId, int weekNum, int day)
+        public string ScheduleOnTheDay(long chatId, int weekNum, int day, int university)
         {
             UserDb userDb = new UserDb();
 
-            string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            if (weekNum == 1)
-                result += " верхней недели\n \n";
-            else
-                result += " нижней недели\n \n";
-
-
             ScheduleDB schedule = new ScheduleDB();
 
-            ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
-                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), weekNum, day);
+            ScheduleDay scheduleDay = new ScheduleDay();
+
+            string result = "Расписание на " + ConvertWeekDayToRussian(day);
+            switch (university)
+            {
+                case 0:
+                {
+                    if (weekNum == 1)
+                        result += " верхней недели\n \n";
+                    else
+                        result += " нижней недели\n \n";
+
+                    scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
+                        userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
+                        userDb.CheckUserElements(chatId, "group"), weekNum, day);
+                        break;
+                }
+                case 1:
+                {
+                    if (weekNum == 1)
+                    {
+                        result += " 2 недели\n \n";
+                            scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
+                            userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
+                            userDb.CheckUserElements(chatId, "group"), 2, day);
+                        }
+
+                    else
+                    {
+                        result += " 1 недели\n \n";
+                            scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
+                            userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
+                            userDb.CheckUserElements(chatId, "group"), 1, day);
+                        }
+                        
+                    break;
+                    }
+            }
+            
+
+
+           
 
             List<Lesson> listPar = scheduleDay.Lesson.ToList();
+            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>(); 
+            listPar.Sort(comparer);
 
             string lessons = "";
             foreach (Lesson item in listPar)
@@ -60,10 +94,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 result += lessons;
                 int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                       CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
-                if (weekNumNow == 1)
-                    result += "\nСейчас идет верхняя неделя";
-                else
-                    result += "\nСейчас идет нижняя неделя";
+
+                switch (university)
+                {
+                    case 0:
+                    {
+                        if (weekNumNow == 1)
+                            result += "\nСейчас идет верхняя неделя";
+                        else
+                            result += "\nСейчас идет нижняя неделя";
+                        break;
+                    }
+                    case 1:
+                    {
+                        if (weekNumNow == 1)
+                            result += "\nСейчас идет 2 неделя";
+                        else
+                            result += "\nСейчас идет 1 неделя";
+                        break;
+                        }
+                }
                 return result;
             }
 
