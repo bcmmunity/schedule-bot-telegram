@@ -5,9 +5,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
     public class HomeWorkLogic
     {
-        public string SendHomework(long chatId, int daysfromtoday)
+        public string SendHomework(long chatId, int daysfromtoday, string socialNetwork)
         {
-            UserDb userDb = new UserDb();
+            SnUserDb userDb = new SnUserDb(socialNetwork);
 
             DateTime now = DateTime.Now.Date;
             HomeWorkDB homeWork = new HomeWorkDB();

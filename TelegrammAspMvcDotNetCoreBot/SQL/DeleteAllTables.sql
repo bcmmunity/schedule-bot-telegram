@@ -7,3 +7,5 @@ DROP TABLE Groups
 DROP TABLE Courses
 DROP TABLE Facilities
 DROP TABLE Universities
+DROP TABLE ErrorLogs
+DROP TABLE StatisticLogs

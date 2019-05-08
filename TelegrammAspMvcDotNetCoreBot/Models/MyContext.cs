@@ -19,7 +19,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 		public DbSet<ScheduleDay> ScheduleDays { get; set; }
 		public DbSet<Lesson> Lessons { get; set; }
 		public DbSet<HomeWork> HomeWorks { get; set; }
-	    public DbSet<User> Users { get; set; }
+	    public DbSet<SnUser> SnUsers { get; set; }
         public DbSet<ErrorLog> ErrorLogs { get; set; }
+        public DbSet<StatisticLog> StatisticLogs { get; set; }
     }
 }

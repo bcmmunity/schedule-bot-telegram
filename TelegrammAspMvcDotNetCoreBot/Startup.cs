@@ -5,6 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using Microsoft.EntityFrameworkCore;
 using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
+using VkNet;
+using VkNet.Abstractions;
+using VkNet.Model;
 
 namespace TelegrammAspMvcDotNetCoreBot
 {
@@ -28,7 +31,11 @@ namespace TelegrammAspMvcDotNetCoreBot
 
 			services.AddMvc();
 
-           
+            services.AddSingleton<IVkApi>(sp => {
+                var api = new VkApi();
+                api.Authorize(new ApiAuthParams { AccessToken = Configuration["Config:AccessToken"] });
+                return api;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,7 +61,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             });
 
             //Bot Configuration
-            Bot.GetBotClientAsync().Wait();
+             Bot.GetBotClientAsync().Wait();
         }
     }
 }

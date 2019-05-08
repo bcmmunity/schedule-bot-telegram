@@ -1,6 +1,6 @@
 ﻿namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-    public class TelegramKeybord
+    public class TelegramKeyboard
     {
 		public Telegram.Bot.Types.ReplyMarkups.ReplyKeyboardMarkup GetKeyboard(string[][] buttons)
 		{

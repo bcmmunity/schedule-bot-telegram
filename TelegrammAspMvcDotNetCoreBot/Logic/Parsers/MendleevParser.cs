@@ -67,7 +67,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                     week1.Week = 2;
                     week1.Day = new List<ScheduleDay>();
-
+                        //номера недель отличаются от мисис
                     week2.Week = 1;
                     week2.Day = new List<ScheduleDay>();
 
@@ -514,11 +514,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 case "Ф":
                     return "ИСМЭН-ИФХ";
                 case "Юр":
-                    return "Гуманитарный";
+                    return "ГФ";
                 case "ЮР":
-                    return "Гуманитарный";
+                    return "ГФ";
                 case "Ю":
-                    return "Гуманитарный";
+                    return "ГФ";
                 case "МН":
                     return "ТНВиВМ";
                 case "МК":

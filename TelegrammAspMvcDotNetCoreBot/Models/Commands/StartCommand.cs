@@ -25,29 +25,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
         public override async Task Execute(Message message, TelegramBotClient botClient)
 		{
-            List<string> un = new ScheduleDB().GetUniversities();
-
-            string[][] unn = new string[un.ToList().Count][];
-
-            int count = 0;
-            foreach (string item in un)
-            {
-                unn[count] = new[] { item };
-                count++;
-            }
+            ResponseBulder response = new ResponseBulder("Telegram");
 
             var chatId = message.Chat.Id;
-
-            UserDb userDb = new UserDb();
-
-            if (!userDb.CheckUser(chatId))
-                userDb.CreateUser(chatId);
-            else
-                userDb.RecreateUser(chatId);
+            var universities = response.UniversitiesList(chatId);
 
 		    //await botClient.SendTextMessageAsync(chatId, "Привет, выбери свой университет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
 
-		    await botClient.SendStickerAsync(chatId, _uniSticker, replyMarkup: new TelegramKeybord().GetKeyboard(unn));
+		    await botClient.SendStickerAsync(chatId, _uniSticker, replyMarkup: new TelegramKeyboard().GetKeyboard(universities));
 
         }
 	}

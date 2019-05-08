@@ -1,10 +1,11 @@
 ﻿namespace TelegrammAspMvcDotNetCoreBot.Models
 {
 
-    public class User
+    public class SnUser
     {
-        public int UserId { get; set; }
-        public long TelegramId { get; set; }
+        public int SnUserId { get; set; }
+        public long SocialNetworkId { get; set; }
+        public string SocialNetwork { get; set; }
         public University University { get; set; }
         public Facility Facility { get; set; }
         public Course Course { get; set; }
