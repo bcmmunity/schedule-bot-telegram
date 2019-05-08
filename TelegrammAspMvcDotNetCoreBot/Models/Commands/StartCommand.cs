@@ -28,7 +28,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
             ResponseBulder response = new ResponseBulder("Telegram");
 
             var chatId = message.Chat.Id;
-            var universities = response.UniversitiesList(chatId);
+            var universities = response.UniversitiesArray(chatId);
 
 		    //await botClient.SendTextMessageAsync(chatId, "Привет, выбери свой университет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
 
