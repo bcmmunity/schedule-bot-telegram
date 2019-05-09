@@ -15,8 +15,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         private ScheduleDB scheduleDb = new ScheduleDB();
         private Schedule schedule = new Schedule();
 
-        public ReplyKeyboardMarkup TelegramMainKeyboard { get; set; }
-        public MessageKeyboard VkMainKeyboard { get; set; }
+        public ReplyKeyboardMarkup TelegramMainKeyboard { get;}
+        public MessageKeyboard VkMainKeyboard { get;}
+
+        public InlineKeyboardMarkup InlineScheduleKeyboard { get;}
+        public InlineKeyboardMarkup InlineWatchingHomeworkKeyboard { get;}
+        public InlineKeyboardMarkup InlineAddingHomeworkKeyboard { get; }
+        public InlineKeyboardMarkup InlineHomeworkCancelKeyboard { get;}
+
+        public MessageKeyboard PayloadScheduleKeyboard { get; }
+        public MessageKeyboard PayloadWatchingHomeworkKeyboard { get; }
+        public MessageKeyboard PayloadAddingHomeworkKeyboard { get; }
+        public MessageKeyboard PayloadHomeworkCancelKeyboard { get; }
 
         public ResponseBulder(string socialNetwork)
         {
@@ -28,10 +38,166 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 new[] {"О пользователе","Сбросить"}
             };
             TelegramKeyboard telegramKeyboard = new TelegramKeyboard();
-            TelegramMainKeyboard = telegramKeyboard.GetKeyboard(mainKeyboardButtons);
-
             VkKeyboard vkKeyboard = new VkKeyboard();
+
+            TelegramMainKeyboard = telegramKeyboard.GetKeyboard(mainKeyboardButtons);
             VkMainKeyboard = vkKeyboard.GetKeyboard(mainKeyboardButtons);
+
+            string[][] homeworkCancelButton =
+{
+                    new[] {"Отменить"}
+                };
+
+            string[][] scheduleText =
+            {
+                    new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"},
+                    new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"}
+                };
+
+
+            string[][] scheduleTextVk =
+            {
+                new[] { "Пн в(2)", "Пн н(1)"},
+                new[] { "Вт в(2)", "Вт н(1)" },
+                new[] { "Ср в(2)", "Ср н(1)" },
+                new[] { "Чт в(2)", "Чт н(1)" },
+                new[] { "Пт в(2)", "Пт н(1)" },
+                new[] { "Сб в(2)", "Сб н(1)" },
+                new[] {"В главное меню"}
+            };
+
+            DateTime now = DateTime.Now.Date;
+
+            string[][] homeworkText =
+            {
+                        new[] {DateConverter(now.Subtract(new TimeSpan(6, 0, 0, 0))),
+                            DateConverter(now.Subtract(new TimeSpan(5, 0, 0, 0))),
+                            DateConverter(now.Subtract(new TimeSpan(4, 0, 0, 0)))},
+                        new[]{DateConverter(now.Subtract(new TimeSpan(3, 0, 0, 0))),
+                            DateConverter(now.Subtract(new TimeSpan(2, 0, 0, 0))),
+                            DateConverter(now.Subtract(new TimeSpan(1, 0, 0, 0)))},
+                        new[]{DateConverter(now),
+                            DateConverter(now.AddDays(1)),
+                            DateConverter(now.AddDays(2))},
+                        new[] {DateConverter(now.AddDays(3)),
+                            DateConverter(now.AddDays(4)),
+                            DateConverter(now.AddDays(5))},
+                        new[]{DateConverter(now.AddDays(6)),
+                            DateConverter(now.AddDays(7))}
+
+                };
+            string[][] homeworkTextVk =
+            {
+                new[] {DateConverter(now.Subtract(new TimeSpan(6, 0, 0, 0))),
+                    DateConverter(now.Subtract(new TimeSpan(5, 0, 0, 0))),
+                    DateConverter(now.Subtract(new TimeSpan(4, 0, 0, 0)))},
+                new[]{DateConverter(now.Subtract(new TimeSpan(3, 0, 0, 0))),
+                    DateConverter(now.Subtract(new TimeSpan(2, 0, 0, 0))),
+                    DateConverter(now.Subtract(new TimeSpan(1, 0, 0, 0)))},
+                new[]{DateConverter(now),
+                    DateConverter(now.AddDays(1)),
+                    DateConverter(now.AddDays(2))},
+                new[] {DateConverter(now.AddDays(3)),
+                    DateConverter(now.AddDays(4)),
+                    DateConverter(now.AddDays(5))},
+                new[]{DateConverter(now.AddDays(6)),
+                    DateConverter(now.AddDays(7))},
+                new[]{"В главное меню"}
+            };
+
+            /* CallbackQuery.Data представляет из себя трехзначное число abc
+    a = [0,4], где 0 - отмена, 1 - просмотр расписания верхней недели, 2 - просмотр расписания нижней недели, 3 - добавление ДЗ, 4 - просмотр ДЗ
+    b1, b2 = [1,7], где 1 - понедельник, 2 - вторник, .. , 7 - воскресенье
+    b3, b4 = [0,7], где 0 - ноль дней от текущей даты, 1 - один день от текущей даты, ..
+    c1, c2 = 0
+    c3, c4 = 0 - плюс день, 1 - минус день
+    b0, с0 = 0
+    */
+
+            string[][] homeworkCancelCallbackData =
+            {
+                    new[] {"000"}
+                };
+
+            string[][] scheduleCallbackData =
+            {
+                    new[] {"110", "120", "130", "140", "150", "160"},
+                    new[] {"210", "220", "230", "240", "250", "260"}
+                };
+            string[][] scheduleCallbackDataVk =
+            {
+                new[] {"110", "210"},
+                new[] { "120", "220" },
+                new[] { "130", "230" },
+                new[] { "140", "240" },
+                new[] { "150", "250" },
+                new[] { "160", "260" },
+                new [] {"000"}
+            };
+
+            string[][] addingHomeworkCallbackData =
+            {
+                new[] { "361","351", "341"},
+                new[] {"331", "321", "311"},
+                new[] {"300","310", "320"},
+                new[] {"330", "340", "350"},
+                new[] { "360", "370" }
+
+            };
+
+
+            string[][] addingHomeworkCallbackDataVk =
+            {
+                new[] { "361","351", "341"},
+                new[] {"331", "321", "311"},
+                new[] {"300","310", "320"},
+                new[] {"330", "340", "350"},
+                new[] { "360", "370" },
+                new[] {"000"}
+            };
+
+            string[][] watchingHomeworkCallbackData =
+            {
+                    new[] { "461","451", "441"},
+                    new[] {"431", "421", "411"},
+                    new[] {"400","410", "420"},
+                    new[] {"430", "440", "450"},
+                    new[] { "460", "470" }
+                };
+            string[][] watchingHomeworkCallbackDataVk =
+            {
+                new[] { "461","451", "441"},
+                new[] {"431", "421", "411"},
+                new[] {"400","410", "420"},
+                new[] {"430", "440", "450"},
+                new[] { "460", "470" },
+                new[] {"000"}
+            };
+
+
+            //Определение сегодняшнего дня
+
+            int day;
+            int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+            if ((int)DateTime.Now.DayOfWeek == 0)
+                day = 7;
+            else
+            {
+                day = (int)DateTime.Now.DayOfWeek;
+            }
+
+            string today = weekNum.ToString() + day.ToString() + "0";
+
+            InlineScheduleKeyboard = telegramKeyboard.GetInlineKeyboard(scheduleText, scheduleCallbackData);
+            InlineWatchingHomeworkKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkText, watchingHomeworkCallbackData);
+            InlineAddingHomeworkKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkText, addingHomeworkCallbackData);
+            InlineHomeworkCancelKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
+
+            PayloadScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleCallbackDataVk,today);
+            PayloadWatchingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, watchingHomeworkCallbackDataVk);
+            PayloadAddingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, addingHomeworkCallbackDataVk);
+            PayloadHomeworkCancelKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
 
             userDb = new SnUserDb(socialNetwork);
             _socialNetwork = socialNetwork;
@@ -113,6 +279,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             }
 
             return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork);
+        }
+
+        public string UserInfo(long id)
+        {
+            string result = "Информация о пользователе\n \n";
+            result += "Id: " + id + "\n";
+            result += "Институт: " + userDb.CheckUserElements(id, "university") + "\n";
+            result += "Факультет: " + userDb.CheckUserElements(id, "facility") + "\n";
+            result += "Курс: " + userDb.CheckUserElements(id, "course") + "\n";
+            result += "Группа: " + userDb.CheckUserElements(id, "group") + "\n";
+            return result;
         }
 
         private string[][] ButtonsFromList(List<string> values, int page = 1)
@@ -236,6 +413,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
 
             return null;
+        }
+
+        public string DateConverter(DateTime date)
+        {
+            string shortdate = date.ToShortDateString();
+            string month = shortdate.Split(".")[1];
+            string day = shortdate.Split(".")[0];
+
+            return day + "." + month;
         }
     }
 }

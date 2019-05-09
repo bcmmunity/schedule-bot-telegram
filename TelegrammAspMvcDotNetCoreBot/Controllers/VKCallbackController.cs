@@ -22,6 +22,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         private readonly IConfiguration _configuration;
         private readonly IVkApi _vkApi;
 
+        private static bool Dz { get; set; } = false;
+        private static string Date { get; set; } = String.Empty;
         private SnUserDb userDb = new SnUserDb("Vk");
 
         public VkCallbackController(IVkApi vkApi, IConfiguration configuration)
@@ -58,6 +60,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     {
                         ResponseBulder response = new ResponseBulder("Vk");
                         ScheduleDB scheduleDb = new ScheduleDB();
+                        HomeWorkLogic homeWork = new HomeWorkLogic();
+                        HomeWorkDB homeWorkDb = new HomeWorkDB();
                         VkKeyboard keyboard = new VkKeyboard();
 
                         // Десериализация
@@ -67,6 +71,25 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                         if (chatId == -1)
                             return Ok("ok");
+
+                        //Режим добавления ДЗ
+                        if (Dz && message.Text != "Отменить")
+                        {
+                            homeWorkDb.AddHomeWork(userDb.CheckUserElements(chatId, "university"),
+                                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
+                                userDb.CheckUserElements(chatId, "group"), Date, message.Text);
+                            Dz = false;
+                            Date = String.Empty;
+                            _vkApi.Messages.Send(new MessagesSendParams
+                            {
+                                RandomId = new DateTime().Millisecond,
+                                PeerId = message.PeerId.Value,
+                                Message = "Задание было успешно добавлено",
+                                Keyboard = response.VkMainKeyboard
+                            });
+                                return Ok();
+                        }
+
 
 
                             if (!userDb.CheckUser(chatId) || message.Text == "Начать")
@@ -90,22 +113,98 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             if (!string.IsNullOrEmpty(payload.Button))
                             {
+                                if (payload.Button.Contains(';'))
+                                    {
+                                        int page = Convert.ToInt32(payload.Button.Split(';')[0]);
+                                        string course = payload.Button.Split(';')[1];
 
-                                int page = Convert.ToInt32(payload.Button.Split(';')[0]);
-                                string course = payload.Button.Split(';')[1];
 
+                                        var groups = response.GroupsArray(chatId, course, page);
 
-                                var groups = response.GroupsArray(chatId, course, page);
+                                        _vkApi.Messages.Send(new MessagesSendParams
+                                        {
+                                            RandomId = new DateTime().Millisecond,
+                                            PeerId = message.PeerId.Value,
+                                            Message = "Переход на другую страницу",
+                                            Keyboard = keyboard.GetKeyboard(groups, course)
+                                        });
 
-                                _vkApi.Messages.Send(new MessagesSendParams
+                                        return Ok("ok");
+                                    }
+                                else
                                 {
-                                    RandomId = new DateTime().Millisecond,
-                                    PeerId = message.PeerId.Value,
-                                    Message = "Переход на другую страницу",
-                                    Keyboard = keyboard.GetKeyboard(groups, course)
-                                });
+                                    Schedule schedule = new Schedule();
+                                    int a = Convert.ToInt32(Char.GetNumericValue(payload.Button[0]));
+                                    int b = Convert.ToInt32(Char.GetNumericValue(payload.Button[1]));
+                                    int c = Convert.ToInt32(Char.GetNumericValue(payload.Button[2]));
+                                    if (a == 0)
+                                    {
+                                            Dz = false;
+                                            Date = String.Empty;
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = "Главное меню",
+                                                Keyboard = response.VkMainKeyboard
+                                            });
 
-                                return Ok("ok");
+                                            return Ok("ok");
+                                    }
+                                    else if (a == 1 || a == 2)
+                                    {
+                                        string result = schedule.ScheduleOnTheDay(chatId, a, b, "Vk");
+
+                                        _vkApi.Messages.Send(new MessagesSendParams
+                                        {
+                                            RandomId = new DateTime().Millisecond,
+                                            PeerId = message.PeerId.Value,
+                                            Message = result,
+                                            Keyboard = response.PayloadScheduleKeyboard
+                                        });
+
+                                        return Ok("ok");
+                                    }
+                                    else if (a == 3)
+                                    {
+                                        if (c == 0)
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = AddHomework(b),
+                                                Keyboard = response.PayloadHomeworkCancelKeyboard
+                                            });
+                                           else if (c == 1)
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = AddHomework(-b),
+                                                Keyboard = response.PayloadHomeworkCancelKeyboard
+                                            });
+                                           return Ok("ok");
+                                        }
+                                    else if (a == 4)
+                                    {
+                                        string result = String.Empty;
+                                        if (c == 0)
+                                            result = homeWork.SendHomework(chatId, b, "Vk");
+                                        else if (c == 1)
+                                            result = homeWork.SendHomework(chatId, -b, "Vk");
+                                        _vkApi.Messages.Send(new MessagesSendParams
+                                        {
+                                            RandomId = new DateTime().Millisecond,
+                                            PeerId = message.PeerId.Value,
+                                            Message = result,
+                                            Keyboard = response.PayloadWatchingHomeworkKeyboard
+                                        });
+
+                                            return Ok("ok");
+                                    }
+
+                                    }
+                                
                             }
                             }
                            
@@ -238,57 +337,48 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                         if (message.Text == "Расписание" && userDb.CheckUserElements(chatId, "group") != "")
                         {
-                            //TODO
-                            _vkApi.Messages.Send(new MessagesSendParams
+                                _vkApi.Messages.Send(new MessagesSendParams
                             {
                                 RandomId = new DateTime().Millisecond,
                                 PeerId = message.PeerId.Value,
-                                Message = "Извините, данная функция пока находится в разработке",
-                                Keyboard = response.VkMainKeyboard
+                                Message = "Выбери неделю и день",
+                                Keyboard = response.PayloadScheduleKeyboard
                             });
                             return Ok("ok");
                         }
 
                         if (message.Text == "Что задали?" && userDb.CheckUserElements(chatId, "group") != "")
                         {
-                            //TODO
                             _vkApi.Messages.Send(new MessagesSendParams
                             {
                                 RandomId = new DateTime().Millisecond,
                                 PeerId = message.PeerId.Value,
-                                Message = "Извините, данная функция пока находится в разработке",
-                                Keyboard = response.VkMainKeyboard
+                                Message = "Выбери дату\n \nСегодня " + response.DateConverter(DateTime.Now),
+                                Keyboard = response.PayloadWatchingHomeworkKeyboard
                             });
                             return Ok("ok");
-                        }
+                            }
 
                         if (message.Text == "Добавить ДЗ" && userDb.CheckUserElements(chatId, "group") != "")
                         {
-                            //TODO
-                            _vkApi.Messages.Send(new MessagesSendParams
+  
+                                _vkApi.Messages.Send(new MessagesSendParams
                             {
                                 RandomId = new DateTime().Millisecond,
                                 PeerId = message.PeerId.Value,
-                                Message = "Извините, данная функция пока находится в разработке",
-                                Keyboard = response.VkMainKeyboard
+                                Message = "Выбери дату\n \nСегодня " + response.DateConverter(DateTime.Now),
+                                Keyboard = response.PayloadAddingHomeworkKeyboard
                             });
                             return Ok("ok");
                         }
 
                         if (message.Text == "О пользователе" && userDb.CheckUserElements(chatId, "group") != "")
                         {
-                            string result = "Информация о пользователе\n \n";
-                            result += "Id: " + chatId + "\n";
-                            result += "Институт: " + userDb.CheckUserElements(chatId, "university") + "\n";
-                            result += "Факультет: " + userDb.CheckUserElements(chatId, "facility") + "\n";
-                            result += "Курс: " + userDb.CheckUserElements(chatId, "course") + "\n";
-                            result += "Группа: " + userDb.CheckUserElements(chatId, "group") + "\n";
-
                             _vkApi.Messages.Send(new MessagesSendParams
                             {
                                 RandomId = new DateTime().Millisecond,
                                 PeerId = message.PeerId.Value,
-                                Message = result,
+                                Message = response.UserInfo(chatId),
                                 Keyboard = response.VkMainKeyboard
                             });
                             return Ok("ok");
@@ -309,13 +399,27 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                         }
 
-                        _vkApi.Messages.Send(new MessagesSendParams
+                        if (message.Text == "В главное меню" && userDb.CheckUserElements(chatId, "group") != "")
+                        {
+                            _vkApi.Messages.Send(new MessagesSendParams
+                            {
+                                RandomId = new DateTime().Millisecond,
+                                PeerId = message.PeerId.Value,
+                                Message = "Главное меню",
+                                Keyboard = response.VkMainKeyboard
+                            });
+                            return Ok("ok");
+                        }
+
+
+                            _vkApi.Messages.Send(new MessagesSendParams
                         {
                             RandomId = new DateTime().Millisecond,
                             PeerId = message.PeerId.Value,
                             Message = "Извините, такой команды я не знаю",
                             Keyboard = response.VkMainKeyboard
                         });
+
 
                         break;
                     }
@@ -349,6 +453,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                 return Ok("ok");
             }
+        }
+        private string AddHomework(int daysfromtoday)
+        {
+            DateTime now = DateTime.Now.Date;
+            ResponseBulder response = new ResponseBulder("Vk");
+            Dz = true;
+            if (daysfromtoday < 0)
+                Date = response.DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)));
+            else if (daysfromtoday == 0)
+            {
+                Date = response.DateConverter(now);
+            }
+            else if (daysfromtoday > 0)
+            {
+                Date = response.DateConverter(now.AddDays(daysfromtoday));
+            }
+
+            return "Введите текст домашнего задания и отправьте его как обычное сообщение";
         }
     }
 }

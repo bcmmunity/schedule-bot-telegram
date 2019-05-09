@@ -177,105 +177,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                     if (message.Text == "Расписание")
                     {
-                        string[][] unn =
-                        {
-                        new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"},
-                        new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"}
-                    };
-
-                        string[][] callbackData =
-                        {
-                        new[] {"110", "120", "130", "140", "150", "160"},
-                        new[] {"210", "220", "230", "240", "250", "260"}
-                    };
-
                         await botClient.SendTextMessageAsync(chatId, "Выбери неделю и день", ParseMode.Markdown,
-                            replyMarkup: keybord.GetInlineKeyboard(unn, callbackData));
+                            replyMarkup: response.InlineScheduleKeyboard);
                         return Ok();
                     }
 
                     if (message.Text == "Добавить ДЗ" && userDb.CheckUserElements(chatId, "group") != "")
                     {
-                        DateTime now = DateTime.Now.Date;
-
-                        string[][] unn =
-                        {
-                        new[] {DateConverter(now.Subtract(new TimeSpan(6, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(5, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(4, 0, 0, 0)))},
-                        new[]{DateConverter(now.Subtract(new TimeSpan(3, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(2, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(1, 0, 0, 0)))},
-                        new[]{DateConverter(now),
-                            DateConverter(now.AddDays(1)),
-                            DateConverter(now.AddDays(2))},
-                        new[] {DateConverter(now.AddDays(3)),
-                            DateConverter(now.AddDays(4)),
-                            DateConverter(now.AddDays(5))},
-                        new[]{DateConverter(now.AddDays(6)),
-                            DateConverter(now.AddDays(7))}
-                    };
-
-                        string[][] callbackData =
-                        {
-                        new[] { "361","351", "341"},
-                        new[] {"331", "321", "311"},
-                        new[] {"300","310", "320"},
-                        new[] {"330", "340", "350"},
-                        new[] { "360", "370" }
-
-                    };
-
-                        await botClient.SendTextMessageAsync(chatId, "Выбери дату\n \nСегодня " + DateConverter(now), ParseMode.Markdown,
-                            replyMarkup: keybord.GetInlineKeyboard(unn, callbackData));
+                        await botClient.SendTextMessageAsync(chatId, "Выбери дату\n \nСегодня " + response.DateConverter(DateTime.Now), ParseMode.Markdown,
+                            replyMarkup: response.InlineAddingHomeworkKeyboard);
                         return Ok();
                     }
                     if (message.Text == "Что задали?" && userDb.CheckUserElements(chatId, "group") != "")
                     {
-                        DateTime now = DateTime.Now.Date;
-
-
-                        string[][] unn =
-                        {
-                        new[] {DateConverter(now.Subtract(new TimeSpan(6, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(5, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(4, 0, 0, 0)))},
-                        new[]{DateConverter(now.Subtract(new TimeSpan(3, 0, 0, 0))),
-                              DateConverter(now.Subtract(new TimeSpan(2, 0, 0, 0))),
-                              DateConverter(now.Subtract(new TimeSpan(1, 0, 0, 0)))},
-                        new[]{DateConverter(now),
-                        DateConverter(now.AddDays(1)),
-                        DateConverter(now.AddDays(2))},
-                        new[] {DateConverter(now.AddDays(3)),
-                            DateConverter(now.AddDays(4)),
-                            DateConverter(now.AddDays(5))},
-                        new[]{DateConverter(now.AddDays(6)),
-                             DateConverter(now.AddDays(7))}
-                    };
-
-                        string[][] callbackData =
-                        {
-                        new[] { "461","451", "441"},
-                        new[] {"431", "421", "411"},
-                        new[] {"400","410", "420"},
-                        new[] {"430", "440", "450"},
-                        new[] { "460", "470" }
-                    };
-
-                        await botClient.SendTextMessageAsync(chatId, "Выбери дату\n \nСегодня " + DateConverter(now), ParseMode.Markdown,
-                            replyMarkup: keybord.GetInlineKeyboard(unn, callbackData));
+                        await botClient.SendTextMessageAsync(chatId, "Выбери дату\n \nСегодня " + response.DateConverter(DateTime.Now), ParseMode.Markdown,
+                            replyMarkup: response.InlineWatchingHomeworkKeyboard);
                         return Ok();
                     }
                     if (message.Text == "О пользователе")
-                    {
-                        string result = "Информация о пользователе\n \n";
-                        result += "Id: " + chatId + "\n";
-                        result += "Институт: " + userDb.CheckUserElements(chatId, "university") + "\n";
-                        result += "Факультет: " + userDb.CheckUserElements(chatId, "facility") + "\n";
-                        result += "Курс: " + userDb.CheckUserElements(chatId, "course") + "\n";
-                        result += "Группа: " + userDb.CheckUserElements(chatId, "group") + "\n";
-
-                        await botClient.SendTextMessageAsync(chatId, result, parseMode: ParseMode.Markdown, replyMarkup: response.TelegramMainKeyboard);
+                    {    
+                        await botClient.SendTextMessageAsync(chatId, response.UserInfo(chatId), parseMode: ParseMode.Markdown, replyMarkup: response.TelegramMainKeyboard);
                         return Ok();
                     }
 
@@ -303,73 +224,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                 else if (update.Type == UpdateType.CallbackQuery)
                 {
                     long chatId = update.CallbackQuery.Message.Chat.Id;
-                    TelegramKeyboard keybord = new TelegramKeyboard();
-                    DateTime now = DateTime.Now.Date;
+
                     Schedule schedule = new Schedule();
                     HomeWorkLogic homeWork = new HomeWorkLogic();
-
-                    string[][] homeworkCancelButton =
-                    {
-                    new[] {"Отменить"}
-                };
-
-                    string[][] scheduleText =
-                    {
-                    new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"},
-                    new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"}
-                };
-
-                    string[][] homeworkText =
-                    {
-                        new[] {DateConverter(now.Subtract(new TimeSpan(6, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(5, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(4, 0, 0, 0)))},
-                        new[]{DateConverter(now.Subtract(new TimeSpan(3, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(2, 0, 0, 0))),
-                            DateConverter(now.Subtract(new TimeSpan(1, 0, 0, 0)))},
-                        new[]{DateConverter(now),
-                            DateConverter(now.AddDays(1)),
-                            DateConverter(now.AddDays(2))},
-                        new[] {DateConverter(now.AddDays(3)),
-                            DateConverter(now.AddDays(4)),
-                            DateConverter(now.AddDays(5))},
-                        new[]{DateConverter(now.AddDays(6)),
-                            DateConverter(now.AddDays(7))}
-
-                };
-
-                    string[][] homeworkCancelCallbackData =
-                    {
-                    new[] {"000"}
-                };
-
-                    string[][] scheduleCallbackData =
-                    {
-                    new[] {"110", "120", "130", "140", "150", "160"},
-                    new[] {"210", "220", "230", "240", "250", "260"}
-                };
-
-                    string[][] homeworkCallbackData =
-                    {
-                    new[] { "461","451", "441"},
-                    new[] {"431", "421", "411"},
-                    new[] {"400","410", "420"},
-                    new[] {"430", "440", "450"},
-                    new[] { "460", "470" }
-                };
-
-                    InlineKeyboardMarkup inlineScheduleKeyboard = keybord.GetInlineKeyboard(scheduleText, scheduleCallbackData);
-                    InlineKeyboardMarkup inlineHomeworkKeyboard = keybord.GetInlineKeyboard(homeworkText, homeworkCallbackData);
-                    InlineKeyboardMarkup homeworkCancelKeyboard = keybord.GetInlineKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
-
-                    /* CallbackQuery.Data представляет из себя трехзначное число abc
-                        a = [0,4], где 0 - отмена, 1 - просмотр расписания верхней недели, 2 - просмотр расписания нижней недели, 3 - добавление ДЗ, 4 - просмотр ДЗ
-                        b1, b2 = [1,7], где 1 - понедельник, 2 - вторник, .. , 7 - воскресенье
-                        b3, b4 = [0,7], где 0 - ноль дней от текущей даты, 1 - один день от текущей даты, ..
-                        c1, c2 = 0
-                        c3, c4 = 0 - плюс день, 1 - минус день
-                        b0, с0 = 0
-                        */
+                    ResponseBulder response = new ResponseBulder("Telegram");
 
                     int a = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[0]));
                     int b = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[1]));
@@ -387,17 +245,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     {
                         string result = schedule.ScheduleOnTheDay(chatId, a, b,"Telegram");
                         await botClient.EditMessageTextAsync(chatId,
-                            update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineScheduleKeyboard);
+                            update.CallbackQuery.Message.MessageId, result, replyMarkup: response.InlineScheduleKeyboard);
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                     }
                     else if (a == 3)
                     {
                         if (c == 0)
                             await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(b), replyMarkup: homeworkCancelKeyboard);
+                                update.CallbackQuery.Message.MessageId, AddHomework(b), replyMarkup: response.InlineHomeworkCancelKeyboard);
                         else if (c == 1)
                             await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-b), replyMarkup: homeworkCancelKeyboard);
+                                update.CallbackQuery.Message.MessageId, AddHomework(-b), replyMarkup: response.InlineHomeworkCancelKeyboard);
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                     }
                     else if (a == 4)
@@ -415,7 +273,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         else
                         {
                             await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, result, replyMarkup: inlineHomeworkKeyboard);
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: response.InlineWatchingHomeworkKeyboard);
                             await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                         }
 
@@ -449,7 +307,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         var botClient = await Bot.GetBotClientAsync();
 
                         await botClient.EditMessageTextAsync(chatId,
-                        update.CallbackQuery.Message.MessageId, "Хм, что то пошло не так");
+                        update.CallbackQuery.Message.MessageId, "Хм, что-то пошло не так");
 
                         errorLoggingDb.AddErrorInLog(chatId, "CallbackQuery", update.CallbackQuery.Data, e.Source + ": " + e.Message, DateTime.Now);
 
@@ -463,34 +321,25 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             }
         }
 
-        private string DateConverter(DateTime date)
-        {
-            string shortdate = date.ToShortDateString();
-            string month = shortdate.Split(".")[1];
-            string day = shortdate.Split(".")[0];
-
-            return day + "." + month;
-        }
-
         private string AddHomework(int daysfromtoday)
         {
             DateTime now = DateTime.Now.Date;
+            ResponseBulder response = new ResponseBulder("Telegram");
             Dz = true;
             if (daysfromtoday < 0)
-                Date = DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)));
+                Date = response.DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)));
             else if (daysfromtoday == 0)
             {
-                Date = DateConverter(now);
+                Date = response.DateConverter(now);
             }
             else if (daysfromtoday > 0)
             {
-                Date = DateConverter(now.AddDays(daysfromtoday));
+                Date = response.DateConverter(now.AddDays(daysfromtoday));
             }
 
             return "Введите текст домашнего задания и отправьте его как обычное сообщение";
         }
 
 
-       
-	}
+    }
 }
