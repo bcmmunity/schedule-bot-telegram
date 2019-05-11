@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
-using Telegram.Bot.Types.ReplyMarkups;
 using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
@@ -16,7 +15,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
     {
         private static bool Dz { get; set; } = false;
         private static string Date { get; set; } = String.Empty;
-        private SnUserDb userDb = new SnUserDb("Telegram");
+        private readonly SnUserDb userDb = new SnUserDb("Telegram");
 
         // GET api/values
         [HttpGet]
@@ -34,7 +33,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
             try
             {
-                if (update == null) return Ok();
+                if (update == null)
+                {
+                    return Ok();
+                }
 
                 var botClient = await Bot.GetBotClientAsync();
 
@@ -102,10 +104,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         return Ok();
                     }
 
+                    if (message.Text.Contains("Помощь"))
+                    {
+                        new ErrorLoggingDB().AddErrorInLog(chatId, "Help", message.Text, "Unknown", DateTime.Now);
+                        await botClient.SendTextMessageAsync(chatId,
+                            "Обращение было успешно зарегистировано. Спасибо!", parseMode: ParseMode.Markdown);
+                        return Ok();
+                    }
+
                     //Основной режим 
                     if (userDb.CheckUserElements(chatId, "university") == "" && scheduleDb.IsUniversityExist(message.Text))
                     {
-                        var facilities = response.FacilitiesArray(chatId, message.Text);
+                        string[][] facilities = response.FacilitiesArray(chatId, message.Text);
 
                         //await botClient.SendTextMessageAsync(chatId, "Теперь выбери факультет", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
                         await botClient.SendStickerAsync(chatId, facSticker, replyMarkup: keybord.GetKeyboard(facilities));
@@ -116,7 +126,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     if (userDb.CheckUserElements(chatId, "facility") == "" &&
                         scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
                     {
-                        var courses = response.CoursesArray(chatId, message.Text);
+                        string[][] courses = response.CoursesArray(chatId, message.Text);
 
                         //await botClient.SendTextMessageAsync(chatId, "Теперь выбери курс", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
                         await botClient.SendStickerAsync(chatId, courseSticker, replyMarkup: keybord.GetKeyboard(courses));
@@ -127,7 +137,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             userDb.CheckUserElements(chatId, "university"), userDb.CheckUserElements(chatId, "facility"),
                             message.Text))
                     {
-                        var groups = response.GroupsArray(chatId, message.Text);
+                        string[][] groups = response.GroupsArray(chatId, message.Text);
 
                         //await botClient.SendTextMessageAsync(chatId, "Теперь выбери группу", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown, replyMarkup: (Telegram.Bot.Types.ReplyMarkups.IReplyMarkup)KeybordController.GetKeyboard(unn, count));
                         await botClient.SendStickerAsync(chatId, groupSticker, replyMarkup: keybord.GetKeyboard(groups));
@@ -150,11 +160,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         string result = response.Today(chatId);
 
                         if (!result.Equals("Учебы нет"))
+                        {
                             await botClient.SendTextMessageAsync(chatId, result, parseMode: ParseMode.Markdown, replyMarkup: response.TelegramMainKeyboard);
+                        }
                         else
+                        {
 
                             //await botClient.SendTextMessageAsync(chatId, "Учебы нет, отдыхай", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                             await botClient.SendStickerAsync(chatId, relaxSticker, replyMarkup: response.TelegramMainKeyboard);
+                        }
 
                         loggingDb.AddRecordInLog(chatId, message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds, startTime);
                         return Ok();
@@ -162,14 +176,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                     if (message.Text == "Завтра" && userDb.CheckUserElements(chatId, "group") != "")
                     {
-                        
+
                         string result = response.Tommorrow(chatId);
 
                         if (!result.Equals("Учебы нет"))
+                        {
                             await botClient.SendTextMessageAsync(chatId, result, ParseMode.Markdown, replyMarkup: response.TelegramMainKeyboard);
+                        }
                         else
+                        {
                             //await botClient.SendTextMessageAsync(chatId, "Учебы нет, отдыхай", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                             await botClient.SendStickerAsync(chatId, relaxSticker, replyMarkup: response.TelegramMainKeyboard);
+                        }
 
                         loggingDb.AddRecordInLog(chatId, message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds, startTime);
                         return Ok();
@@ -195,7 +213,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         return Ok();
                     }
                     if (message.Text == "О пользователе")
-                    {    
+                    {
                         await botClient.SendTextMessageAsync(chatId, response.UserInfo(chatId), parseMode: ParseMode.Markdown, replyMarkup: response.TelegramMainKeyboard);
                         return Ok();
                     }
@@ -212,6 +230,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok();
                             }
                         }
+
+
 
                         await botClient.SendTextMessageAsync(chatId, "Извините, такой команды я не знаю", parseMode: ParseMode.Markdown);
 
@@ -243,7 +263,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     }
                     else if (a == 1 || a == 2)
                     {
-                        string result = schedule.ScheduleOnTheDay(chatId, a, b,"Telegram");
+                        string result = schedule.ScheduleOnTheDay(chatId, a, b, "Telegram");
                         await botClient.EditMessageTextAsync(chatId,
                             update.CallbackQuery.Message.MessageId, result, replyMarkup: response.InlineScheduleKeyboard);
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
@@ -251,20 +271,29 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     else if (a == 3)
                     {
                         if (c == 0)
+                        {
                             await botClient.EditMessageTextAsync(chatId,
                                 update.CallbackQuery.Message.MessageId, AddHomework(b), replyMarkup: response.InlineHomeworkCancelKeyboard);
+                        }
                         else if (c == 1)
+                        {
                             await botClient.EditMessageTextAsync(chatId,
                                 update.CallbackQuery.Message.MessageId, AddHomework(-b), replyMarkup: response.InlineHomeworkCancelKeyboard);
+                        }
+
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                     }
                     else if (a == 4)
                     {
                         string result = String.Empty;
                         if (c == 0)
-                            result = homeWork.SendHomework(chatId, b,"Telegram");
+                        {
+                            result = homeWork.SendHomework(chatId, b, "Telegram");
+                        }
                         else if (c == 1)
-                            result = homeWork.SendHomework(chatId, -b,"Telegram");
+                        {
+                            result = homeWork.SendHomework(chatId, -b, "Telegram");
+                        }
 
                         if (result == update.CallbackQuery.Message.Text)
                         {
@@ -296,9 +325,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         var chatId = message.Chat.Id;
                         var botClient = await Bot.GetBotClientAsync();
 
-                        await botClient.SendTextMessageAsync(chatId, "Хм, что то пошло не так", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                        await botClient.SendTextMessageAsync(chatId, "Хм, что то пошло не так\nЕсли у вас возникают проблемы, просто напишите боту о своей проблеме, снабжая вопрос надписью 'Помощь', и мы постараемся помочь вам.", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
 
-                        errorLoggingDb.AddErrorInLog(chatId, "Message", message.Text, e.Message,DateTime.Now);
+                        errorLoggingDb.AddErrorInLog(chatId, "Message", message.Text, e.Message, DateTime.Now);
 
                     }
                     else if (update.Type == UpdateType.CallbackQuery)
@@ -307,7 +336,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         var botClient = await Bot.GetBotClientAsync();
 
                         await botClient.EditMessageTextAsync(chatId,
-                        update.CallbackQuery.Message.MessageId, "Хм, что-то пошло не так");
+                        update.CallbackQuery.Message.MessageId, "Хм, что-то пошло не так\nЕсли у вас возникают проблемы, просто напишите боту о своей проблеме, снабжая вопрос надписью 'Помощь', и мы постараемся помочь вам.");
 
                         errorLoggingDb.AddErrorInLog(chatId, "CallbackQuery", update.CallbackQuery.Data, e.Source + ": " + e.Message, DateTime.Now);
 
@@ -327,7 +356,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             ResponseBulder response = new ResponseBulder("Telegram");
             Dz = true;
             if (daysfromtoday < 0)
+            {
                 Date = response.DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)));
+            }
             else if (daysfromtoday == 0)
             {
                 Date = response.DateConverter(now);

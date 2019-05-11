@@ -8,8 +8,8 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 {
     public class HomeWorkDB
     {
-       private readonly MyContext _db;
-        
+        private readonly MyContext _db;
+
         public HomeWorkDB()
         {
             _db = new DB().Connect();
@@ -34,39 +34,21 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 List<Group> @group = new List<Group>();
                 @group = _db.Groups.Where(g => g.Course == coursem).Where(t => t.Name.Contains(mainGroup)).ToList();
 
-                foreach (var itemGroup in @group)
+                foreach (Group itemGroup in @group)
                 {
-                    HomeWork homeWork = new HomeWork();
-                    homeWork.Date = date;
-                    homeWork.HomeWorkText = text;
+                    HomeWork homeWork = new HomeWork
+                    {
+                        Date = date,
+                        HomeWorkText = text,
 
-                    homeWork.Group = itemGroup;
+                        Group = itemGroup
+                    };
                     _db.HomeWorks.Add(homeWork);
                     _db.SaveChanges();
                 }
             }
         }
 
-        ///// <summary>
-        ///// Добавление домашшнего задания на сегодня
-        ///// </summary>
-        //public static void AddHomeWorkToday(string university, string faculty, string course, string groupName,
-        //    string text)
-        //{
-        //    string date = DateTime.Now.ToString("d");
-        //    AddHomeWork(university, faculty, course, groupName, date, text);
-        //}
-        
-        ///// <summary>
-        ///// Добавление домашнего задания на завтра
-        ///// </summary>
-        //public static void AddHomeWorkTomorrow(string university, string faculty, string course, string groupName,
-        //    string text)
-        //{
-        //    string date = DateTime.Now.AddDays(1).ToString("d");
-        //    AddHomeWork(university, faculty, course, groupName, date, text);
-        //}
-        
         public string GetHomeWork(string university, string faculty, string course, string groupName,
             string date)
         {
@@ -75,52 +57,29 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             {
                 List<HomeWork> homeWorks = _db.HomeWorks.Where(m => m.Date == date).Where(n => n.Group.Name == groupName).ToList();
 
-
-                //homeWork = (from kl in Db.HomeWorks
-                //    where kl.Date == date && kl.Group.Name == groupName && kl.Group.Course.Name == course &&
-                //          kl.Group.Course.Facility.Name == faculty &&
-                //          kl.Group.Course.Facility.University.Name == university
-                //    select kl).FirstOrDefault();
                 if (homeWorks.Count == 0)
+                {
                     result = "Ничего не задано\n";
+                }
                 else
                 {
-                    foreach (var item in homeWorks)
+                    foreach (HomeWork item in homeWorks)
                     {
-                        result += item.HomeWorkText+"\n";
+                        result += item.HomeWorkText + "\n";
                     }
-                    
+
                 }
             }
 
             return result;
         }
 
-        
-        //public static string GetHomeWorkToday(string university, string faculty, string course, string groupName)
-        //{
-        //    string date = DateTime.Now.ToString("d");
-        //    return GetHomeWork(university, faculty, course, groupName, date);
-        //}
-
-        //public static string GetHomeWorkTomorrow(string university, string faculty, string course, string groupName)
-        //{
-        //    string date = DateTime.Now.AddDays(1).ToString("d");
-        //    return GetHomeWork(university, faculty, course, groupName, date);
-        //}
-
-        //public static string GetHomeWorkYesterday(string university, string faculty, string course, string groupName)
-        //{
-        //    string date = DateTime.Now.AddDays(-1).ToString("d");
-        //    return GetHomeWork(university, faculty, course, groupName, date);
-        //}
-
         public void DeleteOldHomeWork()
         {
             DateTime now = DateTime.Now;
-          //  DateTime twoWeeksAgo;
-//            TimeSpan dif = now - twoWeeksAgo;
-            foreach (var h in _db.HomeWorks)
+            //  DateTime twoWeeksAgo;
+            //            TimeSpan dif = now - twoWeeksAgo;
+            foreach (HomeWork h in _db.HomeWorks)
             {
                 DateTime homeWorkOnDelete = DateTime.Parse(h.Date);
                 TimeSpan dif = now - homeWorkOnDelete;

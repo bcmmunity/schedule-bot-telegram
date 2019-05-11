@@ -10,23 +10,25 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
     public class ResponseBulder
     {
-        private string _socialNetwork;
-        private SnUserDb userDb;
-        private ScheduleDB scheduleDb = new ScheduleDB();
-        private Schedule schedule = new Schedule();
+        private readonly string _socialNetwork;
+        private readonly SnUserDb userDb;
+        private readonly ScheduleDB scheduleDb = new ScheduleDB();
+        private readonly Schedule schedule = new Schedule();
 
-        public ReplyKeyboardMarkup TelegramMainKeyboard { get;}
-        public MessageKeyboard VkMainKeyboard { get;}
+        public ReplyKeyboardMarkup TelegramMainKeyboard { get; }
+        public MessageKeyboard VkMainKeyboard { get; }
 
-        public InlineKeyboardMarkup InlineScheduleKeyboard { get;}
-        public InlineKeyboardMarkup InlineWatchingHomeworkKeyboard { get;}
+        public InlineKeyboardMarkup InlineScheduleKeyboard { get; }
+        public InlineKeyboardMarkup InlineWatchingHomeworkKeyboard { get; }
         public InlineKeyboardMarkup InlineAddingHomeworkKeyboard { get; }
-        public InlineKeyboardMarkup InlineHomeworkCancelKeyboard { get;}
+        public InlineKeyboardMarkup InlineHomeworkCancelKeyboard { get; }
 
         public MessageKeyboard PayloadScheduleKeyboard { get; }
         public MessageKeyboard PayloadWatchingHomeworkKeyboard { get; }
         public MessageKeyboard PayloadAddingHomeworkKeyboard { get; }
         public MessageKeyboard PayloadHomeworkCancelKeyboard { get; }
+
+        public string MainVariants { get; }
 
         public ResponseBulder(string socialNetwork)
         {
@@ -180,8 +182,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
-            if ((int)DateTime.Now.DayOfWeek == 0)
+            if (DateTime.Now.DayOfWeek == 0)
+            {
                 day = 7;
+            }
             else
             {
                 day = (int)DateTime.Now.DayOfWeek;
@@ -194,21 +198,31 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             InlineAddingHomeworkKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkText, addingHomeworkCallbackData);
             InlineHomeworkCancelKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
 
-            PayloadScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleCallbackDataVk,today);
+            PayloadScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleCallbackDataVk, today);
             PayloadWatchingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, watchingHomeworkCallbackDataVk);
             PayloadAddingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, addingHomeworkCallbackDataVk);
             PayloadHomeworkCancelKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
 
             userDb = new SnUserDb(socialNetwork);
             _socialNetwork = socialNetwork;
+            string[][] mainKeyboardButtonsNoKeyboard =
+            {
+                new[] {"Сегодня", "Завтра"},
+                new[] {"О пользователе","Сбросить"}
+            };
+            MainVariants = AnswerVariants(mainKeyboardButtonsNoKeyboard);
         }
 
         public string[][] UniversitiesArray(long id)
         {
             if (!userDb.CheckUser(id))
+            {
                 userDb.CreateUser(id);
+            }
             else
+            {
                 userDb.RecreateUser(id);
+            }
 
             List<string> un = new ScheduleDB().GetUniversities();
             return ButtonsFromList(un);
@@ -231,13 +245,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             return ButtonsFromList(un);
         }
 
-        public string[][] GroupsArray(long id, string course,int page = 1)
+        public string[][] GroupsArray(long id, string course, int page = 1)
         {
             userDb.EditUser(id, "course", course);
 
             List<string> un = scheduleDb.GetGroups(userDb.CheckUserElements(id, "university"),
                 userDb.CheckUserElements(id, "facility"), userDb.CheckUserElements(id, "course"));
-            return ButtonsFromList(un,page);
+            return ButtonsFromList(un, page);
         }
 
         public void LetsWork(long id, string group)
@@ -250,8 +264,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
-            if ((int)DateTime.Now.DayOfWeek == 0)
+            if (DateTime.Now.DayOfWeek == 0)
+            {
                 day = 7;
+            }
             else
             {
                 day = (int)DateTime.Now.DayOfWeek;
@@ -265,17 +281,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
-            if ((int)DateTime.Now.DayOfWeek == 0)
+            if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 1;
-                weekNum++;
+                weekNum = weekNum == 1 ? 2 : 1;
             }
             else
             {
                 if ((int)DateTime.Now.DayOfWeek == 6)
+                {
                     day = 7;
+                }
                 else
+                {
                     day = ((int)DateTime.Now.DayOfWeek + 1) % 7;
+                }
             }
 
             return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork);
@@ -300,7 +320,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             if (valuesLength <= 10)
             {
                 string[][] buttons = new string[values.ToList().Count][];
- 
+
                 foreach (string item in values)
                 {
                     buttons[count] = new[] { item };
@@ -309,16 +329,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 return buttons;
             }
-            else if ((valuesLength > 10 && valuesLength <=20 && _socialNetwork == "Vk")|| (valuesLength > 10 && _socialNetwork == "Telegram"))
+            else if ((valuesLength > 10 && valuesLength <= 20 && _socialNetwork == "Vk") || (valuesLength > 10 && _socialNetwork == "Telegram"))
             {
                 string[][] buttons = valuesLength % 2 == 0 ? new string[valuesLength / 2][] : new string[valuesLength / 2 + 1][];
 
                 for (int i = 0; i < values.Count; i += 2)
                 {
                     if (i == values.Count - 1)
+                    {
                         buttons[count] = new[] { values[i] }; //элементов нечетное кол-во
+                    }
                     else
+                    {
                         buttons[count] = new[] { values[i], values[i + 1] };
+                    }
+
                     count++;
                 }
 
@@ -338,17 +363,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                     elementsCount -= itemsPerPage;
                     pagesCount++;
                     if (elementsCount <= 0)
+                    {
                         break;
+                    }
                 }
 
                 //chosen page forming
 
-                
+
 
                 for (int i = 0; i < valuesLength; i++)
                 {
-                    if (i >= (page-1)* itemsPerPage && i < page* itemsPerPage)
+                    if (i >= (page - 1) * itemsPerPage && i < page * itemsPerPage)
+                    {
                         pageList.Add(values[i]);
+                    }
                 }
 
                 //forming buttons
@@ -364,11 +393,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 //forming arrows
 
                 if (page == 1)
-                    buttons[count] = new[] { (page+1)+" ->" };
+                {
+                    buttons[count] = new[] { (page + 1) + " ->" };
+                }
                 else if (page == pagesCount)
-                    buttons[count] = new[] { "<- "+ (page-1)};
+                {
+                    buttons[count] = new[] { "<- " + (page - 1) };
+                }
                 else
-                    buttons[count] = new[] { "<- "+ (page-1), (page+1)+" ->" };
+                {
+                    buttons[count] = new[] { "<- " + (page - 1), (page + 1) + " ->" };
+                }
 
                 return buttons;
 
@@ -422,6 +457,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string day = shortdate.Split(".")[0];
 
             return day + "." + month;
+        }
+
+        public string AnswerVariants(string[][] buttons)
+        {
+            string result = "";
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                for (int j = 0; j < buttons[i].Length; j++)
+                {
+                    result += buttons[i][j] + ", ";
+                }
+            }
+
+            return result;
         }
     }
 }

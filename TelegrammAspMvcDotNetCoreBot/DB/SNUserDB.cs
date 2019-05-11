@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
 {
-    class SnUserDb
+    internal class SnUserDb
     {
         private readonly MyContext _db;
         private string SocialNetwork { get; }
@@ -16,7 +16,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
         public void CreateUser(long userId)
         {
-          if (CheckUser(userId)) return;
+            if (CheckUser(userId)) return;
             SnUser user = new SnUser
             {
                 SocialNetworkId = userId,
@@ -28,12 +28,24 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
         public bool CheckUser(long userId) //Проверка существования пользователя
         {
-        
+
 
             if (_db.SnUsers.FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork) != null)
                 return true;
             return false;
         }
+
+
+
+
+
+
+
+
+
+
+
+
 
         public void RecreateUser(long userId)
         {
@@ -49,7 +61,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             SnUser user = _db.SnUsers.FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork);
             switch (type)
             {
-                case "university": 
+                case "university":
                     _db.SnUsers.FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork).University = _db.Universities.FirstOrDefault(n => n.Name == param);
                     _db.SnUsers.Update(user);
                     break;

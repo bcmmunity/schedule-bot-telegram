@@ -8,16 +8,17 @@ using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-	public class Schedule
-	{
-		public void ScheduleUpdate()
-		{
+    public class Schedule
+    {
+        public void ScheduleUpdate()
+        {
             MisisParser misisParser = new MisisParser();
             misisParser.ReadXls("ИТАСУ");
             misisParser.ReadXls("ИНМИН");
             misisParser.ReadXlsx("МГИ");
             misisParser.ReadXls("ЭУПП");
             misisParser.ReadXls("ЭкоТех");
+
 
             MendleevParser mendleevParser = new MendleevParser();
             mendleevParser.ReadXlsx("1 course");
@@ -26,6 +27,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             mendleevParser.ReadXlsx("4 course");
             mendleevParser.ReadXlsx("5 course");
             mendleevParser.ReadXlsx("6 course");
+
+            misisParser.ReadXlsx("ИБО");
 
         }
 
@@ -47,7 +50,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 userDb.CheckUserElements(chatId, "group"), weekNum, day);
 
             List<Lesson> listPar = scheduleDay.Lesson.ToList();
-            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>(); 
+            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 
             string lessons = "";
@@ -72,36 +75,36 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             return "Учебы нет";
         }
 
-	    private string ConvertToCorrectTimeFormat(string time)
-	    {
-	        var firstTime = time.Split(" - ").First();
-	        var secondTime = time.Split(" - ").Last();
+        private string ConvertToCorrectTimeFormat(string time)
+        {
+            string firstTime = time.Split(" - ").First();
+            string secondTime = time.Split(" - ").Last();
 
-	        return firstTime.Substring(0, firstTime.LastIndexOf(':')) + " - "
-	                                                                  + secondTime.Substring(0, secondTime.LastIndexOf(':'));
-	    }
+            return firstTime.Substring(0, firstTime.LastIndexOf(':')) + " - "
+                                                                      + secondTime.Substring(0, secondTime.LastIndexOf(':'));
+        }
 
         private string ConvertWeekDayToRussian(int weekDay)
-	    {
-	        switch (weekDay)
-	        {
-	            case 1:
-	                return "понедельник";
-	            case 2:
-	                return "вторник";
-	            case 3:
-	                return "среду";
-	            case 4:
-	                return "четверг";
-	            case 5:
-	                return "пятницу";
-	            case 6:
-	                return "субботу";
+        {
+            switch (weekDay)
+            {
+                case 1:
+                    return "понедельник";
+                case 2:
+                    return "вторник";
+                case 3:
+                    return "среду";
+                case 4:
+                    return "четверг";
+                case 5:
+                    return "пятницу";
+                case 6:
+                    return "субботу";
 
-	        }
+            }
 
-	        return "";
-	    }
+            return "";
+        }
         //static string GetResponse(string uri)
         //{
         //	StringBuilder sb = new StringBuilder();

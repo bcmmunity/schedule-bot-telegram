@@ -1,8 +1,7 @@
-using System.Linq;
-using System.Collections.Generic;
-using TelegrammAspMvcDotNetCoreBot.Models;
 using Microsoft.EntityFrameworkCore;
-using NPOI.OpenXmlFormats.Dml;
+using System.Collections.Generic;
+using System.Linq;
+using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
 {
@@ -19,7 +18,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             if (!IsUniversityExist(name))
             {
-                University un = new University {Name = name};
+                University un = new University { Name = name };
 
                 _db.Universities.Add(un);
                 _db.SaveChanges();
