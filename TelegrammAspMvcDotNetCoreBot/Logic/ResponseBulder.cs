@@ -28,6 +28,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public MessageKeyboard PayloadAddingHomeworkKeyboard { get; }
         public MessageKeyboard PayloadHomeworkCancelKeyboard { get; }
 
+        public string MainVariants { get; }
+
         public ResponseBulder(string socialNetwork)
         {
             string[][] mainKeyboardButtons =
@@ -201,6 +203,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             userDb = new SnUserDb(socialNetwork);
             _socialNetwork = socialNetwork;
+            string[][] mainKeyboardButtonsNoKeyboard =
+            {
+                new[] {"Сегодня", "Завтра"},
+                new[] {"О пользователе","Сбросить"}
+            };
+            MainVariants = AnswerVariants(mainKeyboardButtonsNoKeyboard);
         }
 
         public string[][] UniversitiesArray(long id)
@@ -422,6 +430,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string day = shortdate.Split(".")[0];
 
             return day + "." + month;
+        }
+
+        public string AnswerVariants(string[][] buttons)
+        {
+            string result = "";
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                for (int j = 0; j < buttons[i].Length; j++)
+                {
+                    result += buttons[i][j] + ", ";
+                }
+            }
+
+            return result;
         }
     }
 }

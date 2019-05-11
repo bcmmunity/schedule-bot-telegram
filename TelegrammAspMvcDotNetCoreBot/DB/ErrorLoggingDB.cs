@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
@@ -24,6 +27,20 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             };
             _db.ErrorLogs.Add(errorLog);
             _db.SaveChanges();
+        }
+
+        public List<long> GettingProblemUsers()
+        {
+            List<SnUser> users = _db.SnUsers.Include(n => n.Group).Where(n => n.Group == null && n.SocialNetwork == "Vk").ToList();
+
+            List<long> problemUsersList = new List<long>();
+
+            foreach (var user in users)
+            {
+                    problemUsersList.Add(user.SocialNetworkId);
+            }
+
+            return problemUsersList;
         }
 
     }

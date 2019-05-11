@@ -21,6 +21,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             {
                 for (int column = 0; column < buttons[row].Length; column++)
                 {
+                    if (buttons[row][column] == "")
+                        continue;
+
                     if (buttons[row][column].Contains("<"))
                         keyboard.AddButton(buttons[row][column], buttons[row][column].Split(' ')[1] + ";"+payload,KeyboardButtonColor.Primary);
                     else if (buttons[row][column].Contains(">"))
@@ -46,6 +49,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             {
                 for (int column = 0; column < buttons[row].Length; column++)
                 {
+                    if (buttons[row][column] == "")
+                        continue;
+
                     if (payload[row][column] == "000")
                         keyboard.AddButton(buttons[row][column], payload[row][column],KeyboardButtonColor.Negative);
                     else if (payload[row][column] == "300" || payload[row][column] == "400" || payload[row][column] == today)

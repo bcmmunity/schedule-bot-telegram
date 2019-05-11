@@ -22,6 +22,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
 		public IActionResult Index()
         {
+            LoggingDB log = new LoggingDB();
+            ViewBag.Statistic = log.GetStatistic();
             return View();
         }
 

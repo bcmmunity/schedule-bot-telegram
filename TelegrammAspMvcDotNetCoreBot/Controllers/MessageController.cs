@@ -102,6 +102,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         return Ok();
                     }
 
+                    if (message.Text.Contains("Помощь"))
+                    {
+                        new ErrorLoggingDB().AddErrorInLog(chatId, "Help", message.Text, "Unknown", DateTime.Now);
+                        await botClient.SendTextMessageAsync(chatId,
+                            "Обращение было успешно зарегистировано. Спасибо!", parseMode: ParseMode.Markdown);
+                        return Ok();
+                    }
+
                     //Основной режим 
                     if (userDb.CheckUserElements(chatId, "university") == "" && scheduleDb.IsUniversityExist(message.Text))
                     {
@@ -213,6 +221,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             }
                         }
 
+                       
+
                         await botClient.SendTextMessageAsync(chatId, "Извините, такой команды я не знаю", parseMode: ParseMode.Markdown);
 
                         loggingDb.AddRecordInLog(chatId, message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds, startTime);
@@ -296,7 +306,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         var chatId = message.Chat.Id;
                         var botClient = await Bot.GetBotClientAsync();
 
-                        await botClient.SendTextMessageAsync(chatId, "Хм, что то пошло не так", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+                        await botClient.SendTextMessageAsync(chatId, "Хм, что то пошло не так\nЕсли у вас возникают проблемы, просто напишите боту о своей проблеме, снабжая вопрос надписью 'Помощь', и мы постараемся помочь вам.", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
 
                         errorLoggingDb.AddErrorInLog(chatId, "Message", message.Text, e.Message,DateTime.Now);
 
@@ -307,7 +317,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         var botClient = await Bot.GetBotClientAsync();
 
                         await botClient.EditMessageTextAsync(chatId,
-                        update.CallbackQuery.Message.MessageId, "Хм, что-то пошло не так");
+                        update.CallbackQuery.Message.MessageId, "Хм, что-то пошло не так\nЕсли у вас возникают проблемы, просто напишите боту о своей проблеме, снабжая вопрос надписью 'Помощь', и мы постараемся помочь вам.");
 
                         errorLoggingDb.AddErrorInLog(chatId, "CallbackQuery", update.CallbackQuery.Data, e.Source + ": " + e.Message, DateTime.Now);
 

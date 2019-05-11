@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -187,18 +188,28 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 						day2.Day = dayofweek / 14 + 1;
 						day2.Lesson = new List<Lesson>();
 
+                        
+
 						for (int para = dayofweek; para < dayofweek + 14; para += 2)
 						{
 							if (sheet.GetRow(para - 1).GetCell(group - 1) != null)
 								if (sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue != "")
 								{
-									Lesson a = new Lesson() { Name = sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para - 1).GetCell(group).StringCellValue, Teacher = "" };
-									day1.Lesson.Add(a);
+                                    try
+                                    {
+                                        Lesson a = new Lesson() { Name = sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para - 1).GetCell(group).StringCellValue, Teacher = "", Number = ((para - dayofweek) / 2 + 1).ToString() };
+                                        day1.Lesson.Add(a);
+                                    }
+                                    catch
+                                    {
+                                        continue;
+                                    }
+									
 								}
 
 							if (sheet.GetRow(para).GetCell(group - 1) != null)
 								if (sheet.GetRow(para).GetCell(group - 1).StringCellValue != "")
-									day2.Lesson.Add(new Lesson() { Name = sheet.GetRow(para).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para).GetCell(group).StringCellValue, Teacher = "" });
+									day2.Lesson.Add(new Lesson() { Name = sheet.GetRow(para).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para).GetCell(group).StringCellValue, Teacher = "", Number = ((para - dayofweek) / 2 + 1).ToString() });
 						}
 
 						week1.Day.Add(day1);

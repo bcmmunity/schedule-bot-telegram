@@ -19,6 +19,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             misisParser.ReadXls("ЭУПП");
             misisParser.ReadXls("ЭкоТех");
 
+
             MendleevParser mendleevParser = new MendleevParser();
             mendleevParser.ReadXlsx("1 course");
             mendleevParser.ReadXlsx("2 course");
@@ -26,6 +27,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             mendleevParser.ReadXlsx("4 course");
             mendleevParser.ReadXlsx("5 course");
             mendleevParser.ReadXlsx("6 course");
+
+            misisParser.ReadXlsx("ИБО");
 
         }
 
