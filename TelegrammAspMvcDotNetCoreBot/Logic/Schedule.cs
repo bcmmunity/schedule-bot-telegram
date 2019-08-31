@@ -15,7 +15,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             MisisParser misisParser = new MisisParser();
             misisParser.ReadXls("ИТАСУ");
             misisParser.ReadXls("ИНМИН");
-            misisParser.ReadXlsx("МГИ");
+            misisParser.ReadXls("МГИ");
             misisParser.ReadXls("ЭУПП");
             misisParser.ReadXls("ЭкоТех");
 
@@ -34,6 +34,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
         public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork)
         {
+            if (day == 7)
+                return "Учебы нет";
+
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
@@ -64,7 +67,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             {
                 result += lessons;
                 int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2;
                 if (weekNumNow == 1)
                     result += "\nСейчас идет верхняя (2) неделя";
                 else

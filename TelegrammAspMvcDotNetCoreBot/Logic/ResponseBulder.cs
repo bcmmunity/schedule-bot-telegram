@@ -263,7 +263,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         {
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2;
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 7;
@@ -280,7 +280,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         {
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2;
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 1;
