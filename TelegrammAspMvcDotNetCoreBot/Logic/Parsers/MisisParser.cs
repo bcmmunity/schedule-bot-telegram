@@ -24,7 +24,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 hssfwb = new HSSFWorkbook(file);
             }
 
-            for (int course = 1; course < 7; course++)
+
+            for (int course = 1; course < 9; course++)
             {
 
                 if (hssfwb.GetSheet(course + " курс") == null)
@@ -51,10 +52,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                         else
                             Schedule.AddGroup("НИТУ МИСиС", fileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue + " 2 подгруппа");
                     }
-                    else
+                    else if (sheet.GetRow(0).GetCell(group - 1).StringCellValue != "")
                     {
-                        Schedule.AddGroup("НИТУ МИСиС", fileName, course.ToString(), sheet.GetRow(0).GetCell(group - 1).StringCellValue);
+                        Schedule.AddGroup("НИТУ МИСиС", fileName, course.ToString(),
+                            sheet.GetRow(0).GetCell(group - 1).StringCellValue);
                     }
+                    else
+                        continue;
 
                     ScheduleWeek week1 = new ScheduleWeek();
                     ScheduleWeek week2 = new ScheduleWeek();
@@ -77,15 +81,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
 
                         for (int para = dayofweek; para < dayofweek + 14; para += 2)
                         {
-                            if (sheet.GetRow(para - 1).GetCell(group - 1) != null)
-                                if (sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue != "")
+                            
+                                if (sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue != "" && sheet.GetRow(para - 1).GetCell(group - 1) != null)
                                 {
                                     Lesson a = new Lesson() { Name = sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para - 1).GetCell(group).StringCellValue, Teacher = "", Number = ((para - dayofweek) / 2 + 1).ToString() };
                                     day1.Lesson.Add(a);
                                 }
 
-                            if (sheet.GetRow(para).GetCell(group - 1) != null)
-                                if (sheet.GetRow(para).GetCell(group - 1).StringCellValue != "")
+                                if (sheet.GetRow(para).GetCell(group - 1).StringCellValue != "" && sheet.GetRow(para).GetCell(group - 1) != null)
                                     day2.Lesson.Add(new Lesson() { Name = sheet.GetRow(para).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para).GetCell(group).StringCellValue, Teacher = "", Number = ((para - dayofweek) / 2 + 1).ToString() });
                         }
 
@@ -137,7 +140,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 hssfwb = new XSSFWorkbook(file);
             }
 
-            for (int course = 1; course < 7; course++)
+            for (int course = 1; course < 9; course++)
             {
 
                 if (hssfwb.GetSheet(course + " курс") == null)
@@ -196,6 +199,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                                 {
                                     try
                                     {
+                                        if (sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue=="")
+                                            continue;
                                         Lesson a = new Lesson() { Name = sheet.GetRow(para - 1).GetCell(group - 1).StringCellValue, Time = sheet.GetRow(para - 1).GetCell(2).StringCellValue, Room = sheet.GetRow(para - 1).GetCell(group).StringCellValue, Teacher = "", Number = ((para - dayofweek) / 2 + 1).ToString() };
                                         day1.Lesson.Add(a);
                                     }

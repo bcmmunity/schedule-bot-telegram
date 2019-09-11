@@ -6,7 +6,7 @@
         {
             int rows = buttons.Length;
 
-            Telegram.Bot.Types.ReplyMarkups.KeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[rows][];
+            Telegram.Bot.Types.ReplyMarkups.KeyboardButton[][] keyboardButtons = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[rows+1][];
 
             for (int row = 0; row < rows; row++)
             {
@@ -18,6 +18,8 @@
                 }
             }
 
+            keyboardButtons[rows] = new Telegram.Bot.Types.ReplyMarkups.KeyboardButton[1];
+            keyboardButtons[rows][0] = "Сбросить";
 
 
             var keyboard = new Telegram.Bot.Types.ReplyMarkups.ReplyKeyboardMarkup

@@ -37,7 +37,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 new[] {"Сегодня", "Завтра"},
                 new[] {"Расписание"},
                 new[] {"Добавить ДЗ", "Что задали?"},
-                new[] {"О пользователе","Сбросить"}
+                new[] {"О пользователе"}
             };
             TelegramKeyboard telegramKeyboard = new TelegramKeyboard();
             VkKeyboard vkKeyboard = new VkKeyboard();
@@ -59,12 +59,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             string[][] scheduleTextVk =
             {
-                new[] { "Пн в(2)", "Пн н(1)"},
-                new[] { "Вт в(2)", "Вт н(1)" },
-                new[] { "Ср в(2)", "Ср н(1)" },
-                new[] { "Чт в(2)", "Чт н(1)" },
-                new[] { "Пт в(2)", "Пт н(1)" },
-                new[] { "Сб в(2)", "Сб н(1)" },
+                new[] { "Пн", "Пн"},  //слева верхняя
+                new[] { "Вт", "Вт" },
+                new[] { "Ср", "Ср" },
+                new[] { "Чт", "Чт" },
+                new[] { "Пт", "Пт" },
+                new[] { "Сб", "Сб" },
                 new[] {"В главное меню"}
             };
 
@@ -181,7 +181,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2 + 1;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 7;
@@ -263,7 +263,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         {
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 7;
@@ -280,7 +280,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         {
             int day;
             int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 1;
@@ -317,7 +317,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             int valuesLength = values.Count;
             int count = 0;
 
-            if (valuesLength <= 10)
+            if (valuesLength < 10)
             {
                 string[][] buttons = new string[values.ToList().Count][];
 
@@ -329,7 +329,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 return buttons;
             }
-            else if ((valuesLength > 10 && valuesLength <= 20 && _socialNetwork == "Vk") || (valuesLength > 10 && _socialNetwork == "Telegram"))
+            else if ((valuesLength >= 10 && valuesLength <= 18 && _socialNetwork == "Vk") || (valuesLength >= 10 && _socialNetwork == "Telegram"))
             {
                 string[][] buttons = valuesLength % 2 == 0 ? new string[valuesLength / 2][] : new string[valuesLength / 2 + 1][];
 
@@ -349,7 +349,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 return buttons;
             }
-            else if (valuesLength > 20 && _socialNetwork == "Vk")
+            else if (valuesLength > 18 && _socialNetwork == "Vk")
             {
                 List<string> pageList = new List<string>();
 

@@ -20,15 +20,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             misisParser.ReadXls("ЭкоТех");
 
 
-            MendleevParser mendleevParser = new MendleevParser();
-            mendleevParser.ReadXlsx("1 course");
-            mendleevParser.ReadXlsx("2 course");
-            mendleevParser.ReadXlsx("3 course");
-            mendleevParser.ReadXlsx("4 course");
-            mendleevParser.ReadXlsx("5 course");
-            mendleevParser.ReadXlsx("6 course");
+            //MendleevParser mendleevParser = new MendleevParser();
+            //mendleevParser.ReadXlsx("1 course");
+            //mendleevParser.ReadXlsx("2 course");
+            //mendleevParser.ReadXlsx("3 course");
+            //mendleevParser.ReadXlsx("4 course");
+            //mendleevParser.ReadXlsx("5 course");
+            //mendleevParser.ReadXlsx("6 course");
+            //mendleevParser.ReadXlsx("7 course");
 
-            misisParser.ReadXlsx("ИБО");
+          //  misisParser.ReadXlsx("ИБО");
 
         }
 
@@ -40,10 +41,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            if (weekNum == 1)
-                result += " верхней (2) недели\n \n";
-            else
-                result += " нижней (1) недели\n \n";
+            result += ", "+ GetWeekName(chatId,weekNum,socialNetwork) + " неделя\n \n";
+
 
 
             ScheduleDB schedule = new ScheduleDB();
@@ -67,11 +66,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             {
                 result += lessons;
                 int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday) + 1) % 2;
+                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
                 if (weekNumNow == 1)
-                    result += "\nСейчас идет верхняя (2) неделя";
+                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork) + " неделя";
                 else
-                    result += "\nСейчас идет нижняя (1) неделя";
+                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork) + " неделя";
                 return result;
             }
 
@@ -107,6 +106,39 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             }
 
             return "";
+        }
+
+        public string GetWeekName(long id, int weekNum, string socialNetwork)
+        {
+            SnUserDb userDb = new SnUserDb(socialNetwork);
+            string university = userDb.CheckUserElements(id, "university");
+
+            switch (university)
+            {
+                case "НИТУ МИСиС":
+                {
+                    if (weekNum == 1)
+                        return "верхняя";
+                    else
+                        return "нижняя";
+
+                }
+                case "РХТУ им.Менделеева":
+                {
+                    if (weekNum == 1)
+                        return "1";
+                    else
+                        return "2";
+                }
+
+                default:
+                {
+                    if (weekNum == 1)
+                        return "1";
+                    else
+                        return "2";
+                }
+            }
         }
         //static string GetResponse(string uri)
         //{

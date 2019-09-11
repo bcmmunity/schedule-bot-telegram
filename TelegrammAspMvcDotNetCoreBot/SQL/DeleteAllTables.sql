@@ -2,7 +2,7 @@ DROP TABLE HomeWorks
 DROP TABLE Lessons
 DROP TABLE ScheduleDays
 DROP TABLE ScheduleWeeks
-DROP TABLE Users
+DROP TABLE SnUsers
 DROP TABLE Groups
 DROP TABLE Courses
 DROP TABLE Facilities

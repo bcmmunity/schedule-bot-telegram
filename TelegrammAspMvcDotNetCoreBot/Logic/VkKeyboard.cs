@@ -32,6 +32,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 keyboard.AddLine();
             }
 
+            keyboard.AddButton("Сбросить", "", KeyboardButtonColor.Negative);
+            keyboard.AddLine();
+
             return keyboard.Build();
         }
 

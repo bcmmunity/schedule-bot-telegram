@@ -88,7 +88,38 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                                                                     .FirstOrDefault(x => x.Name == facility))
                                                    .FirstOrDefault(x => x.Name == course))
                 .FirstOrDefault(v => v.Name == group);
-            _db.ScheduleWeeks.Add(week);
+
+
+            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+
+            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+                .FirstOrDefault(t => t.Name == facility);
+
+            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
+                .FirstOrDefault(t => t.Name == course);
+
+            Group groupm = _db.Groups.Where(n => n.Course == coursem)
+                .FirstOrDefault(t => t.Name == group);
+
+            ScheduleWeek oldScheduleWeek = _db.ScheduleWeeks
+                .Include(v => v.Day)
+                .Where(n => n.Group == groupm)
+                .FirstOrDefault(m => m.Week == week.Week);
+
+            if (oldScheduleWeek != null)
+            {
+                oldScheduleWeek.Day.Clear();
+
+
+                foreach (var day in week.Day)
+                {
+                    oldScheduleWeek.Day.Add(day);
+                }
+            }
+
+            else
+                _db.ScheduleWeeks.Add(week);
+
             _db.SaveChanges();
         }
 

@@ -223,6 +223,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             }
 
+                            if (message.Text == "Сбросить")
+                            {
+                                Dz = false;
+                                string[][] universities = response.UniversitiesArray(chatId);
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
+                                    Keyboard = keyboard.GetKeyboard(universities)
+                                });
+
+                                loggingDb.AddRecordInLog(chatId,
+                                    message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds,
+                                    startTime);
+                                return Ok("ok");
+                            }
+
 
                             //Основной режим 
                             if (userDb.CheckUserElements(chatId, "university") == "" &&
@@ -360,7 +378,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Выбери неделю и день",
+                                    Message = "Выбери неделю и день\nОтсчет недель слева направо",
                                     Keyboard = response.PayloadScheduleKeyboard
                                 });
                                 return Ok("ok");
@@ -403,22 +421,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             }
 
-                            if (message.Text == "Сбросить")
-                            {
-                                string[][] universities = response.UniversitiesArray(chatId);
-                                _vkApi.Messages.Send(new MessagesSendParams
-                                {
-                                    RandomId = new DateTime().Millisecond,
-                                    PeerId = message.PeerId.Value,
-                                    Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
-                                    Keyboard = keyboard.GetKeyboard(universities)
-                                });
-
-                                loggingDb.AddRecordInLog(chatId,
-                                    message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds,
-                                    startTime);
-                                return Ok("ok");
-                            }
+                           
 
                             if (message.Text == "В главное меню" && userDb.CheckUserElements(chatId, "group") != "")
                             {

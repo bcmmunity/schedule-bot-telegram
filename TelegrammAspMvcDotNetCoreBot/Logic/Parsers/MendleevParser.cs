@@ -184,7 +184,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 return 4;
             if (time >= DateTime.Parse("16:30:00") && time <= DateTime.Parse("18:05:00"))
                 return 5;
-
+            if (time >= DateTime.Parse("18:15:00") && time <= DateTime.Parse("19:50:00"))
+                return 6;
+            if (time >= DateTime.Parse("20:00:00") && time <= DateTime.Parse("21:35:00"))
+                return 7;
             return 0;
         }
 
@@ -489,6 +492,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                     return "ФИХ";
                 case "И":
                     return "ИХТ";
+                case "МИ":
+                    return "ИХТ";
                 case "К":
                     return "ИТУ";
                 case "КС":
@@ -501,9 +506,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                     return "ГФ";
                 case "Эк":
                     return "ГФ";
+                case "МЭК":
+                    return "ГФ";
                 case "ПР":
                     return "ИПУР";
                 case "Пр":
+                    return "ИПУР";
+                case "МПР":
+                    return "ИПУР";
+                case "МПр":
                     return "ИПУР";
                 case "А":
                     return "ИПУР";
@@ -512,6 +523,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic.Parsers
                 case "Ен":
                     return "ФЕН";
                 case "Ф":
+                    return "ИСМЭН-ИФХ";
+                case "МФ":
                     return "ИСМЭН-ИФХ";
                 case "Юр":
                     return "ГФ";

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
 using VkNet;
@@ -19,11 +20,20 @@ namespace TelegrammAspMvcDotNetCoreBot
         {
             Configuration = configuration;
             keepAliveThread.Start();
+         //   scheduleUpdaterThread.Start();
         }
 
         public IConfiguration Configuration { get; }
         static Thread keepAliveThread = new Thread(KeepAlive);
 
+        static Thread scheduleUpdaterThread = new Thread(scheduleUpdater);
+
+        static void scheduleUpdater()
+        {
+            //new Schedule().ScheduleUpdate();
+
+           // Thread.Sleep(1000*60*60*24);
+        }
         static void KeepAlive()
         {
             while (true)
@@ -63,6 +73,7 @@ namespace TelegrammAspMvcDotNetCoreBot
         private void OnShutdown()
         {
             keepAliveThread.Abort();
+        //    scheduleUpdaterThread.Abort();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -89,7 +100,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             });
 
             //Bot Configuration
-             Bot.GetBotClientAsync().Wait();
+            Bot.GetBotClientAsync().Wait();
         }
     }
 }
