@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace TelegrammAspMvcDotNetCoreBot.Models
 {
-    public class StatisticLog
+    public class ActivityLog
     {
-        public int Id { get; set; }
-        public long ChatId { get; set; }
+        public int ActivityId { get; set; }
+        public SnUser SnUser { get; set; }
         public string MessageText { get; set; }
         public DateTime MessageDateTime { get; set; }
     }

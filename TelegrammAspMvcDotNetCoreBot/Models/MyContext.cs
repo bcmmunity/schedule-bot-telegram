@@ -19,10 +19,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 		public DbSet<Group> Groups { get; set; }
 		public DbSet<ScheduleWeek> ScheduleWeeks { get; set; }
 		public DbSet<ScheduleDay> ScheduleDays { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
 		public DbSet<Lesson> Lessons { get; set; }
 		public DbSet<HomeWork> HomeWorks { get; set; }
 	    public DbSet<SnUser> SnUsers { get; set; }
         public DbSet<ErrorLog> ErrorLogs { get; set; }
-        public DbSet<StatisticLog> StatisticLogs { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
     }
 }

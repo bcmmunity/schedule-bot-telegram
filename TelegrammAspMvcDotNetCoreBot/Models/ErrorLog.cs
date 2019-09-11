@@ -7,8 +7,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 {
     public class ErrorLog
     {
-        public int Id { get; set; }
-        public long ChatId { get; set; }
+        public int ErrorId { get; set; }
+        public SnUser SnUser { get; set; }
         public string UpdateType { get; set; }
         public string MessageText { get; set; }
         public string ErrorMessage { get; set; }
