@@ -5,17 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Schedule Files\Mendeleev\_old\**" />
-    <Compile Remove="Schedule Files\Misis\_old\**" />
-    <Content Remove="Schedule Files\Mendeleev\_old\**" />
-    <Content Remove="Schedule Files\Misis\_old\**" />
-    <EmbeddedResource Remove="Schedule Files\Mendeleev\_old\**" />
-    <EmbeddedResource Remove="Schedule Files\Misis\_old\**" />
-    <None Remove="Schedule Files\Mendeleev\_old\**" />
-    <None Remove="Schedule Files\Misis\_old\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0-preview3.19153.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0-preview3.19153.1">
@@ -30,10 +19,6 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Schedule Files\Polyteh\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>

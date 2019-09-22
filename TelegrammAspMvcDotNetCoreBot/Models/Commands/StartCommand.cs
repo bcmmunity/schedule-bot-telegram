@@ -25,7 +25,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Commands
 
         public override async Task Execute(Message message, TelegramBotClient botClient)
 		{
-            ResponseBulder response = new ResponseBulder("Telegram");
+            ResponseBuilder response = new ResponseBuilder("Telegram");
 
             var chatId = message.Chat.Id;
             var universities = response.UniversitiesArray(chatId);

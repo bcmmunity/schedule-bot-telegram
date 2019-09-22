@@ -8,7 +8,7 @@ using VkNet.Model.Keyboard;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
-    public class ResponseBulder
+    public class ResponseBuilder
     {
         private readonly string _socialNetwork;
         private readonly SnUserDb userDb;
@@ -30,7 +30,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
         public string MainVariants { get; }
 
-        public ResponseBulder(string socialNetwork)
+        public ResponseBuilder(string socialNetwork)
         {
             string[][] mainKeyboardButtons =
             {

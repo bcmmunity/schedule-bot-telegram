@@ -46,7 +46,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         [HttpPost]
         public IActionResult Callback([FromBody] Updates updates)
         {
-            DateTime startTime = DateTime.Now;
             LoggingDB loggingDb = new LoggingDB();
 
             try
@@ -59,7 +58,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                     case "message_new":
                         {
-                            ResponseBulder response = new ResponseBulder("Vk");
+                            ResponseBuilder response = new ResponseBuilder("Vk");
                             ScheduleDB scheduleDb = new ScheduleDB();
                             HomeWorkLogic homeWork = new HomeWorkLogic();
                             HomeWorkDB homeWorkDb = new HomeWorkDB();
@@ -208,6 +207,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     }
 
                                 }
+
+                                loggingDb.AddRecordInLog(chatId,
+                                    payload.Button, DateTime.Now);
                             }
 
                             if (message.Text.Contains("Помощь"))
@@ -234,10 +236,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
                                     Keyboard = keyboard.GetKeyboard(universities)
                                 });
-
-                                loggingDb.AddRecordInLog(chatId,
-                                    message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds,
-                                    startTime);
                                 return Ok("ok");
                             }
 
@@ -331,9 +329,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     });
 
 
-                                loggingDb.AddRecordInLog(chatId,
-                                    message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds,
-                                    startTime);
+                                
                                 return Ok("ok");
 
                             }
@@ -365,9 +361,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 }
 
 
-                                loggingDb.AddRecordInLog(chatId,
-                                    message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds,
-                                    startTime);
+                             
                                 return Ok("ok");
 
                             }
@@ -479,7 +473,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             });
 
 
-
+                            loggingDb.AddRecordInLog(chatId,
+                                message.Text, DateTime.Now);
 
 
                             break;
@@ -519,7 +514,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         private string AddHomework(int daysfromtoday)
         {
             DateTime now = DateTime.Now.Date;
-            ResponseBulder response = new ResponseBulder("Vk");
+            ResponseBuilder response = new ResponseBuilder("Vk");
             Dz = true;
             if (daysfromtoday < 0)
                 Date = response.DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)));

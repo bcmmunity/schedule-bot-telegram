@@ -50,10 +50,13 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         public void RecreateUser(long userId)
         {
             if (!CheckUser(userId)) return;
-            SnUser user = _db.SnUsers.FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork);
-            _db.SnUsers.Remove(user);
+            SnUser user = _db.SnUsers.Include(u=> u.University).Include(u => u.Course).Include(u => u.Facility).Include(u => u.Group).FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork);
+            user.Group = null;
+            user.Course = null;
+            user.Facility = null;
+            user.University = null;
+
             _db.SaveChanges();
-            CreateUser(userId);
         }
 
         public void EditUser(long userId, string type, string param)

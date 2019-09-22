@@ -4,6 +4,8 @@
 	{
 		public int GroupId { get; set; }
 		public string Name { get; set; }
-		public Course Course { get; set; }
+
+        public byte ScheduleType { get; set; }
+        public Course Course { get; set; }
 	}
 }

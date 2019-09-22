@@ -8,4 +8,5 @@ DROP TABLE Courses
 DROP TABLE Facilities
 DROP TABLE Universities
 DROP TABLE ErrorLogs
-DROP TABLE StatisticLogs
+DROP TABLE ActivityLogs
+DROP TABLE Teachers

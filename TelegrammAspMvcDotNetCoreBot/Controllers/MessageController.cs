@@ -28,7 +28,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
         {
-            DateTime startTime = DateTime.Now;
             LoggingDB loggingDb = new LoggingDB();
 
             try
@@ -49,6 +48,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     //await botClient.SendTextMessageAsync(chatId, "Бот на профилактике.\nПлановая дата окончания: 12.04.19 03:00", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     //return Ok();
 
+                    
+
                     foreach (var command in commands)
                     {
                         if (command.Contains(message) || (!userDb.CheckUser(chatId)))
@@ -57,6 +58,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             return Ok();
                         }
                     }
+
+                    loggingDb.AddRecordInLog(chatId, message.Text, DateTime.Now);
 
                     if (!userDb.CheckUser(chatId))
                     {
@@ -86,7 +89,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     InputOnlineFile workSticker = new InputOnlineFile("CAADAgADDgADi6p7DxKP7piNPfEcAg");
                     InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADEgADi6p7D-1w9zvhrRKPAg");
 
-                    ResponseBulder response = new ResponseBulder("Telegram");
+                    ResponseBuilder response = new ResponseBuilder("Telegram");
                     ScheduleDB scheduleDb = new ScheduleDB();
                     HomeWorkDB homeWorkDb = new HomeWorkDB();
 
@@ -185,7 +188,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 await botClient.SendStickerAsync(chatId, relaxSticker, replyMarkup: response.TelegramMainKeyboard);
                             }
 
-                            loggingDb.AddRecordInLog(chatId, message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds, startTime);
+                            
                             return Ok();
                         }
 
@@ -204,7 +207,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 await botClient.SendStickerAsync(chatId, relaxSticker, replyMarkup: response.TelegramMainKeyboard);
                             }
 
-                            loggingDb.AddRecordInLog(chatId, message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds, startTime);
                             return Ok();
                         }
 
@@ -242,7 +244,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                         await botClient.SendTextMessageAsync(chatId, "Извините, такой команды я не знаю", parseMode: ParseMode.Markdown);
 
-                        loggingDb.AddRecordInLog(chatId, message.Text + " <Time of evaluation> = " + (DateTime.Now - startTime).Seconds, startTime);
+                        
                         return Ok();
                 }
 
@@ -251,9 +253,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                 {
                     long chatId = update.CallbackQuery.Message.Chat.Id;
 
+                    loggingDb.AddRecordInLog(chatId, update.CallbackQuery.Data, DateTime.Now);
+
                     Schedule schedule = new Schedule();
                     HomeWorkLogic homeWork = new HomeWorkLogic();
-                    ResponseBulder response = new ResponseBulder("Telegram");
+                    ResponseBuilder response = new ResponseBuilder("Telegram");
 
                     int a = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[0]));
                     int b = Convert.ToInt32(Char.GetNumericValue(update.CallbackQuery.Data[1]));
@@ -306,6 +310,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                              await botClient.EditMessageTextAsync(chatId,
                                 update.CallbackQuery.Message.MessageId, result, replyMarkup: response.InlineWatchingHomeworkKeyboard);
                         
+                        
+
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 
 
@@ -356,7 +362,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         private string AddHomework(int daysfromtoday)
         {
             DateTime now = DateTime.Now.Date;
-            ResponseBulder response = new ResponseBulder("Telegram");
+            ResponseBuilder response = new ResponseBuilder("Telegram");
             Dz = true;
             if (daysfromtoday < 0)
             {

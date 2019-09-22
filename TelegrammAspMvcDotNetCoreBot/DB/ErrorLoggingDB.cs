@@ -19,7 +19,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             ErrorLog errorLog = new ErrorLog
             {
-                ChatId = chatId,
+                SnUser = _db.SnUsers.FirstOrDefault(u=> u.SocialNetworkId == chatId),
                 UpdateType = updateType,
                 MessageText = messageText,
                 ErrorMessage = errorMessage,

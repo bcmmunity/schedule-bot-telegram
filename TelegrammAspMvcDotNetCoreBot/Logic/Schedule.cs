@@ -3,45 +3,23 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using TelegrammAspMvcDotNetCoreBot.DB;
-using TelegrammAspMvcDotNetCoreBot.Logic.Parsers;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
     public class Schedule
     {
-        public void ScheduleUpdate()
-        {
-            MisisParser misisParser = new MisisParser();
-            misisParser.ReadXls("ИТАСУ");
-            misisParser.ReadXls("ИНМИН");
-            misisParser.ReadXls("МГИ");
-            misisParser.ReadXls("ЭУПП");
-            misisParser.ReadXls("ЭкоТех");
-
-
-            //MendleevParser mendleevParser = new MendleevParser();
-            //mendleevParser.ReadXlsx("1 course");
-            //mendleevParser.ReadXlsx("2 course");
-            //mendleevParser.ReadXlsx("3 course");
-            //mendleevParser.ReadXlsx("4 course");
-            //mendleevParser.ReadXlsx("5 course");
-            //mendleevParser.ReadXlsx("6 course");
-            //mendleevParser.ReadXlsx("7 course");
-
-          //  misisParser.ReadXlsx("ИБО");
-
-        }
 
         public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork)
         {
+            int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
             if (day == 7)
                 return "Учебы нет";
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId,weekNum,socialNetwork) + " неделя\n \n";
+            result += ", "+ GetWeekName(chatId,realWeekNum,socialNetwork) + " неделя\n \n";
 
 
 
@@ -49,7 +27,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
                 userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), weekNum, day);
+                userDb.CheckUserElements(chatId, "group"), realWeekNum, day);
 
             List<Lesson> listPar = scheduleDay.Lesson.ToList();
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
@@ -58,15 +36,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string lessons = "";
             foreach (Lesson item in listPar)
             {
-                lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name +
-                          "\n" + item.Room + "\n\n";
+                Teacher teacher = schedule.GeTeacher(item);
+                if (teacher == null)
+                    lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name +" "+item.Type +
+                            "\n" + item.Room + "\n\n";
+                else
+                    lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name + " " + item.Type +
+                               "\n" + item.Room +
+                                   "\n" + teacher.Name +"\n\n";
             }
 
             if (lessons != "")
             {
                 result += lessons;
-                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
+                int weekNumNow = GetWeekNum(chatId,(((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                 CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1),socialNetwork);
                 if (weekNumNow == 1)
                     result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork) + " неделя";
                 else
@@ -123,6 +107,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                         return "нижняя";
 
                 }
+
                 case "РХТУ им.Менделеева":
                 {
                     if (weekNum == 1)
@@ -139,43 +124,41 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                         return "2";
                 }
             }
+            
         }
-        //static string GetResponse(string uri)
-        //{
-        //	StringBuilder sb = new StringBuilder();
-        //	byte[] buf = new byte[8192];
-        //	HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-        //	HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-        //	Stream resStream = response.GetResponseStream();
-        //	int count = 0;
-        //	do
-        //	{
-        //		count = resStream.Read(buf, 0, buf.Length);
-        //		if (count != 0)
-        //		{
-        //			sb.Append(Encoding.Default.GetString(buf, 0, count));
-        //		}
-        //	}
-        //	while (count > 0);
-        //	return sb.ToString();
-        //}
 
-        //static void Download(string url, string name)
-        //{
+        private int GetWeekNum(long id, int weekNum, string socialNetwork)
+        {
+            SnUserDb userDb = new SnUserDb(socialNetwork);
+            string university = userDb.CheckUserElements(id, "university");
 
-        //	WebClient wc = new WebClient();
+            switch (university)
+            {
+                case "НИТУ МИСиС":
+                {
+                    if (weekNum == 1)
+                        return 1;
+                    else
+                        return 2;
 
-        //	if (url[url.Length - 1] == 'x')
-        //	{
-        //		wc.DownloadFile(url, name + ".xlsx");
-        //		ExcelParserController.ReadXlsx(name);
-        //	}
-        //	else
-        //	{
-        //		wc.DownloadFile(url, name + ".xls");
-        //		ExcelParserController.ReadXls(name);
-        //	}
+                }
 
-        //}
+                case "РХТУ им.Менделеева":
+                {
+                    if (weekNum == 1)
+                        return 2;
+                    else
+                        return 1;
+                }
+
+                default:
+                {
+                    if (weekNum == 1)
+                        return 1;
+                    else
+                        return 2;
+                }
+            }
+        }
     }
 }

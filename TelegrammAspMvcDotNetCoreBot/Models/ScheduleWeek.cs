@@ -5,8 +5,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 	public class ScheduleWeek
 	{
 		public int ScheduleWeekId { get; set; }
-        public int ScheduleNumber { get; set; }
-        public byte ScheduleType { get; set; }
         public int Week { get; set; }
 		public Group Group { get; set; }
 		public ICollection<ScheduleDay> Day { get; set; }
