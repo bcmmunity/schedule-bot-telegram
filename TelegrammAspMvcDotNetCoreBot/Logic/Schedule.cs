@@ -146,9 +146,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 case "РХТУ им.Менделеева":
                 {
                     if (weekNum == 1)
-                        return 2;
-                    else
                         return 1;
+                    else
+                        return 2;
                 }
 
                 default:
