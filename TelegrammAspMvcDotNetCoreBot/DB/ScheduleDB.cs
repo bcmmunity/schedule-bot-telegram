@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
@@ -67,6 +68,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return result;
         }
 
+        public bool IsTeacherExist(string name)
+        {
+            if (_db.Teachers.FirstOrDefault(t => t.Name == name) != null)
+                return true;
+            return false;
+        }
 
 
         public List<string> GetUniversities()
@@ -163,5 +170,39 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 .FirstOrDefault(f => f.ScheduleDayId == li.FirstOrDefault(n => n.Day == day).ScheduleDayId);
         }
 
+        public ScheduleDay GetTeacherSchedule(string teacher, int week,
+            int day)
+        {
+            List<Lesson> listPar = new List<Lesson>();
+
+            List<Lesson> lessons = _db.Lessons.Include(t => t.Teacher).Where(t => t.Teacher.Name == teacher).ToList();
+            List<ScheduleDay> scheduleDays = _db.ScheduleDays.Include(l => l.Lesson).Where(d => d.Day == day).ToList();
+
+            List<string> previousLessons = new List<string>();
+            foreach (var scDay in scheduleDays)
+            {
+                foreach (var lesson in scDay.Lesson)
+                {
+                    if (lessons.Contains(lesson) && !previousLessons.Contains(lesson.Number) && 
+                        _db.ScheduleWeeks.Include(d => d.Day).FirstOrDefault(d => d.Day.Contains(scDay))?.Week == week)
+                    {
+                        listPar.Add(lesson);
+                        previousLessons.Add(lesson.Number);
+                    }
+                        
+
+                }
+            }
+
+
+            ScheduleDay scheduleDay = new ScheduleDay
+            {
+                Day = day,
+                Lesson = listPar
+            };
+            return scheduleDay;
+        }
+
+      
     }
 }

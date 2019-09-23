@@ -24,6 +24,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         private readonly IVkApi _vkApi;
 
         private static bool Dz { get; set; } = false;
+        private static bool TeacherSelection { get; set; } = false;
+
+        private static string Teacher = "";
         private static string Date { get; set; } = String.Empty;
         private readonly SnUserDb userDb = new SnUserDb("Vk");
 
@@ -71,7 +74,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             if (chatId == -1)
                                 return Ok("ok");
-
+                            loggingDb.AddRecordInLog(chatId,
+                                message.Text, DateTime.Now);
                             //Режим добавления ДЗ
                             if (Dz && message.Text != "Отменить")
                             {
@@ -87,6 +91,32 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     PeerId = message.PeerId.Value,
                                     Message = "Задание было успешно добавлено",
                                     Keyboard = response.VkMainKeyboard
+                                });
+                                return Ok();
+                            }
+
+                            if (TeacherSelection && message.Text != "Отменить")
+                            {
+                                if (scheduleDb.IsTeacherExist(message.Text))
+                                {
+                                    TeacherSelection = false;
+                                    Teacher = message.Text;
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message = "Выбери неделю и день",
+                                        Keyboard = response.PayloadTeacherScheduleKeyboard
+                                    });
+                                  
+                                    return Ok("ok");
+                                }
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Преподаватель не найден\nВведи ФИО преподавателя в формате Фамилия И. О.",
+                                    Keyboard = response.PayloadCancelKeyboard
                                 });
                                 return Ok();
                             }
@@ -116,6 +146,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 {
                                     if (payload.Button.Contains(';'))
                                     {
+                                        loggingDb.AddRecordInLog(chatId,
+                                            payload.Button, DateTime.Now);
                                         int page = Convert.ToInt32(payload.Button.Split(';')[0]);
                                         string course = payload.Button.Split(';')[1];
 
@@ -174,7 +206,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                                     RandomId = new DateTime().Millisecond,
                                                     PeerId = message.PeerId.Value,
                                                     Message = AddHomework(b),
-                                                    Keyboard = response.PayloadHomeworkCancelKeyboard
+                                                    Keyboard = response.PayloadCancelKeyboard
                                                 });
                                             else if (c == 1)
                                                 _vkApi.Messages.Send(new MessagesSendParams
@@ -182,7 +214,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                                     RandomId = new DateTime().Millisecond,
                                                     PeerId = message.PeerId.Value,
                                                     Message = AddHomework(-b),
-                                                    Keyboard = response.PayloadHomeworkCancelKeyboard
+                                                    Keyboard = response.PayloadCancelKeyboard
                                                 });
                                             return Ok("ok");
                                         }
@@ -203,13 +235,25 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                                             return Ok("ok");
                                         }
+                                        else if (a == 5 || a == 6)
+                                        {
+                                            string result = schedule.TeacherScheduleOnTheDay(chatId,Teacher, a-4, b, "Vk");
+
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = result,
+                                                Keyboard = response.PayloadTeacherScheduleKeyboard
+                                            });
+
+                                            return Ok("ok");
+                                        }
 
                                     }
 
                                 }
 
-                                loggingDb.AddRecordInLog(chatId,
-                                    payload.Button, DateTime.Now);
                             }
 
                             if (message.Text.Contains("Помощь"))
@@ -402,6 +446,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 });
                                 return Ok("ok");
                             }
+                            if (message.Text == "Расписание преподавателя" && userDb.CheckUserElements(chatId, "group") != "")
+                            {
+                                TeacherSelection = true;
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Введи ФИО преподавателя в формате Фамилия И. О.",
+                                    Keyboard = response.PayloadCancelKeyboard
+                                });
+                                return Ok("ok");
+                            }
 
                             if (message.Text == "О пользователе" && userDb.CheckUserElements(chatId, "group") != "")
                             {
@@ -473,8 +529,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             });
 
 
-                            loggingDb.AddRecordInLog(chatId,
-                                message.Text, DateTime.Now);
 
 
                             break;

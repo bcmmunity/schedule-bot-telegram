@@ -61,6 +61,55 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             return "Учебы нет";
         }
 
+        public string TeacherScheduleOnTheDay(long chatId, string teacherName, int weekNum, int day, string socialNetwork)
+        {
+            int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
+            if (day == 7)
+                return "Учебы нет";
+
+            SnUserDb userDb = new SnUserDb(socialNetwork);
+
+            string result = "Расписание на " + ConvertWeekDayToRussian(day);
+            result += ", "+ GetWeekName(chatId,realWeekNum,socialNetwork) + " неделя\n \n";
+
+
+
+            ScheduleDB schedule = new ScheduleDB();
+
+            ScheduleDay scheduleDay = schedule.GetTeacherSchedule(teacherName, realWeekNum, day);
+
+            List<Lesson> listPar = scheduleDay.Lesson.ToList();
+            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
+            listPar.Sort(comparer);
+
+            string lessons = "";
+            foreach (Lesson item in listPar)
+            {
+                Teacher teacher = schedule.GeTeacher(item);
+                if (teacher == null)
+                    lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name +" "+item.Type +
+                            "\n" + item.Room + "\n\n";
+                else
+                    lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name + " " + item.Type +
+                               "\n" + item.Room +
+                                   "\n" + teacher.Name +"\n\n";
+            }
+
+            if (lessons != "")
+            {
+                result += lessons;
+                int weekNumNow = GetWeekNum(chatId,(((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                 CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1),socialNetwork);
+                if (weekNumNow == 1)
+                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork) + " неделя";
+                else
+                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork) + " неделя";
+                return result;
+            }
+
+            return "Учебы нет";
+        }
+
         private string ConvertToCorrectTimeFormat(string time)
         {
             string firstTime = time.Split(" - ").First();

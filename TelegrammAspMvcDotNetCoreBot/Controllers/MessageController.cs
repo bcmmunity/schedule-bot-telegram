@@ -14,6 +14,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
     public class MessageController : Controller
     {
         private static bool Dz { get; set; } = false;
+        private static bool TeacherSelection { get; set; } = false;
+
+        private static string Teacher = "";
         private static string Date { get; set; } = String.Empty;
         private readonly SnUserDb userDb = new SnUserDb("Telegram");
 
@@ -48,7 +51,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     //await botClient.SendTextMessageAsync(chatId, "Бот на профилактике.\nПлановая дата окончания: 12.04.19 03:00", parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
                     //return Ok();
 
-                    
+
 
                     foreach (var command in commands)
                     {
@@ -104,6 +107,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         Dz = false;
                         Date = String.Empty;
                         await botClient.SendTextMessageAsync(chatId, "Задание было успешно добавлено", ParseMode.Markdown);
+                        return Ok();
+                    }
+
+                    //Режим расписания
+                    if (TeacherSelection)
+                    {
+                        if (scheduleDb.IsTeacherExist(message.Text))
+                        {
+                            TeacherSelection = false;
+                            Teacher = message.Text;
+                            await botClient.SendTextMessageAsync(chatId, "Выбери неделю и день", ParseMode.Markdown,
+                                replyMarkup: response.InlineTeacherScheduleKeyboard);
+                            return Ok();
+                        }
+                        await botClient.SendTextMessageAsync(chatId, "Преподаватель не найден\nВведи ФИО преподавателя в формате Фамилия И. О.", parseMode: ParseMode.Markdown, replyMarkup: response.InlineCancelKeyboard);
                         return Ok();
                     }
 
@@ -229,6 +247,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 replyMarkup: response.InlineWatchingHomeworkKeyboard);
                             return Ok();
                         }
+                        if (message.Text == "Расписание преподавателя")
+                        {
+                            TeacherSelection = true;
+                            await botClient.SendTextMessageAsync(chatId, "Введи ФИО преподавателя в формате Фамилия И. О.", parseMode: ParseMode.Markdown, replyMarkup: response.InlineCancelKeyboard);
+                            return Ok();
+                        }
                         if (message.Text == "О пользователе")
                         {
                             await botClient.SendTextMessageAsync(chatId, response.UserInfo(chatId), parseMode: ParseMode.Markdown, replyMarkup: response.TelegramMainKeyboard);
@@ -266,9 +290,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     if (a == 0)
                     {
                         Dz = false;
+                        TeacherSelection = false;
                         Date = String.Empty;
                         await botClient.EditMessageTextAsync(chatId,
-                            update.CallbackQuery.Message.MessageId, "Ввод задания отменен");
+                            update.CallbackQuery.Message.MessageId, "Ввод отменен");
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                     }
                     else if (a == 1 || a == 2)
@@ -284,12 +309,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         if (c == 0)
                         {
                             await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(b), replyMarkup: response.InlineHomeworkCancelKeyboard);
+                                update.CallbackQuery.Message.MessageId, AddHomework(b), replyMarkup: response.InlineCancelKeyboard);
                         }
                         else if (c == 1)
                         {
                             await botClient.EditMessageTextAsync(chatId,
-                                update.CallbackQuery.Message.MessageId, AddHomework(-b), replyMarkup: response.InlineHomeworkCancelKeyboard);
+                                update.CallbackQuery.Message.MessageId, AddHomework(-b), replyMarkup: response.InlineCancelKeyboard);
                         }
 
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
@@ -315,6 +340,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
 
 
+                    }
+                    else if (a == 5 || a == 6)
+                    {
+                        string result = schedule.TeacherScheduleOnTheDay(chatId,Teacher, a-4, b, "Telegram");
+                        if (result != update.CallbackQuery.Message.Text)
+                            await botClient.EditMessageTextAsync(chatId,
+                                update.CallbackQuery.Message.MessageId, result, replyMarkup: response.InlineTeacherScheduleKeyboard);
+                        await botClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
                     }
                 }
 

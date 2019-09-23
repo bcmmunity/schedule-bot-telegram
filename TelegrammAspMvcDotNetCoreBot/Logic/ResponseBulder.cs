@@ -19,14 +19,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public MessageKeyboard VkMainKeyboard { get; }
 
         public InlineKeyboardMarkup InlineScheduleKeyboard { get; }
+        public InlineKeyboardMarkup InlineTeacherScheduleKeyboard { get; }
         public InlineKeyboardMarkup InlineWatchingHomeworkKeyboard { get; }
         public InlineKeyboardMarkup InlineAddingHomeworkKeyboard { get; }
-        public InlineKeyboardMarkup InlineHomeworkCancelKeyboard { get; }
+        public InlineKeyboardMarkup InlineCancelKeyboard { get; }
 
         public MessageKeyboard PayloadScheduleKeyboard { get; }
+        public MessageKeyboard PayloadTeacherScheduleKeyboard { get; }
         public MessageKeyboard PayloadWatchingHomeworkKeyboard { get; }
         public MessageKeyboard PayloadAddingHomeworkKeyboard { get; }
-        public MessageKeyboard PayloadHomeworkCancelKeyboard { get; }
+        public MessageKeyboard PayloadCancelKeyboard { get; }
 
         public string MainVariants { get; }
 
@@ -37,7 +39,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 new[] {"Сегодня", "Завтра"},
                 new[] {"Расписание"},
                 new[] {"Добавить ДЗ", "Что задали?"},
-                new[] {"О пользователе"}
+                new[] {"Расписание преподавателя","О пользователе"}
             };
             TelegramKeyboard telegramKeyboard = new TelegramKeyboard();
             VkKeyboard vkKeyboard = new VkKeyboard();
@@ -45,7 +47,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             TelegramMainKeyboard = telegramKeyboard.GetKeyboard(mainKeyboardButtons);
             VkMainKeyboard = vkKeyboard.GetKeyboard(mainKeyboardButtons);
 
-            string[][] homeworkCancelButton =
+            string[][] cancelButton =
 {
                     new[] {"Отменить"}
                 };
@@ -108,15 +110,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             };
 
             /* CallbackQuery.Data представляет из себя трехзначное число abc
-    a = [0,4], где 0 - отмена, 1 - просмотр расписания верхней недели, 2 - просмотр расписания нижней недели, 3 - добавление ДЗ, 4 - просмотр ДЗ
-    b1, b2 = [1,7], где 1 - понедельник, 2 - вторник, .. , 7 - воскресенье
+    a = [0,6], где 0 - отмена, 1 - просмотр расписания верхней недели, 2 - просмотр расписания нижней недели, 3 - добавление ДЗ, 
+                                4 - просмотр ДЗ, 5,6 - выбор дня недели препода
+    b1, b2, b5, b6 = [1,7], где 1 - понедельник, 2 - вторник, .. , 7 - воскресенье
     b3, b4 = [0,7], где 0 - ноль дней от текущей даты, 1 - один день от текущей даты, ..
-    c1, c2 = 0
+    c1, c2,c5, c6 = 0
     c3, c4 = 0 - плюс день, 1 - минус день
     b0, с0 = 0
     */
 
-            string[][] homeworkCancelCallbackData =
+            string[][] cancelCallbackData =
             {
                     new[] {"000"}
                 };
@@ -134,6 +137,22 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 new[] { "140", "240" },
                 new[] { "150", "250" },
                 new[] { "160", "260" },
+                new [] {"000"}
+            };
+
+            string[][] scheduleTeacherCallbackData =
+            {
+                new[] {"510", "520", "530", "540", "550", "560"},
+                new[] {"610", "620", "630", "640", "650", "660"}
+            };
+            string[][] scheduleTeacherCallbackDataVk =
+            {
+                new[] {"510", "610"},
+                new[] { "520", "620" },
+                new[] { "530", "630" },
+                new[] { "540", "640" },
+                new[] { "550", "650" },
+                new[] { "560", "660" },
                 new [] {"000"}
             };
 
@@ -194,14 +213,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string today = weekNum.ToString() + day.ToString() + "0";
 
             InlineScheduleKeyboard = telegramKeyboard.GetInlineKeyboard(scheduleText, scheduleCallbackData);
+            InlineTeacherScheduleKeyboard = telegramKeyboard.GetInlineKeyboard(scheduleText, scheduleTeacherCallbackData);
             InlineWatchingHomeworkKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkText, watchingHomeworkCallbackData);
             InlineAddingHomeworkKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkText, addingHomeworkCallbackData);
-            InlineHomeworkCancelKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
+            InlineCancelKeyboard = telegramKeyboard.GetInlineKeyboard(cancelButton, cancelCallbackData);
 
             PayloadScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleCallbackDataVk, today);
+            PayloadTeacherScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleTeacherCallbackDataVk, today);
             PayloadWatchingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, watchingHomeworkCallbackDataVk);
             PayloadAddingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, addingHomeworkCallbackDataVk);
-            PayloadHomeworkCancelKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkCancelButton, homeworkCancelCallbackData);
+            PayloadCancelKeyboard = vkKeyboard.GetPayloadKeyboard(cancelButton, cancelCallbackData);
 
             userDb = new SnUserDb(socialNetwork);
             _socialNetwork = socialNetwork;
