@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         public ScheduleDB()
         {
             _db = new DB().Connect();
+            _db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public bool IsUniversityExist(string university)
@@ -75,6 +77,16 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return false;
         }
 
+        public List<Teacher> TeachersSearch(string name)
+        {
+            if (_db.Teachers.FirstOrDefault(t => t.Name.Contains(name)) != null)
+            {
+                List<Teacher> list = _db.Teachers.Where(t => t.Name.Contains(name)).ToList();
+                return list.GroupBy(x => x.Name).Select(x => x.First()).ToList();
+            }
+
+            return new List<Teacher>();
+        }
 
         public List<string> GetUniversities()
         {
@@ -113,12 +125,18 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
             List<string> result = new List<string>();
             List<Course> source = _db.Courses.Where(n => n.Facility == facultym).ToList();
+            List<int> sortList = new List<int>();
 
             foreach (Course item in source)
             {
-                result.Add(item.Name);
+                sortList.Add(Convert.ToInt32(item.Name));
             }
+            sortList.Sort();
 
+            foreach (int item in sortList)
+            {
+                result.Add(item.ToString());
+            }
             return result;
         }
 
@@ -149,25 +167,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         public ScheduleDay GetSchedule(string university, string facility, string course, string group, int week,
             int day)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-                .FirstOrDefault(t => t.Name == facility);
-
-            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-                .FirstOrDefault(t => t.Name == course);
-
-            Group groupm = _db.Groups.Where(n => n.Course == coursem)
-                .FirstOrDefault(t => t.Name == group);
-
-            List<ScheduleDay> li = _db.ScheduleWeeks
-                .Include(v => v.Day)
-                .Where(n => n.Group == groupm)
-                .FirstOrDefault(m => m.Week == week)
+            List<ScheduleDay> li = _db.ScheduleWeeks.Include(v => v.Day).Where(l => l.Group.Course.Facility.University.Name == university).Where(n => n.Group.Name == group).FirstOrDefault(m => m.Week == week)
                 ?.Day.ToList();
 
-            return _db.ScheduleDays.Include(r => r.Lesson)
-                .FirstOrDefault(f => f.ScheduleDayId == li.FirstOrDefault(n => n.Day == day).ScheduleDayId);
+            return _db.ScheduleDays.Include(r => r.Lesson).FirstOrDefault(f => f.Day == day);
+
         }
 
         public ScheduleDay GetTeacherSchedule(string teacher, int week,

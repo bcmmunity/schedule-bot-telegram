@@ -31,7 +31,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
         public List<long> GettingProblemUsers()
         {
-            List<SnUser> users = _db.SnUsers.Include(n => n.Group).Where(n => n.Group == null && n.SocialNetwork == "Vk").ToList();
+            List<SnUser> users = _db.SnUsers.Where(n => n.SocialNetwork == "Telegram").ToList();
 
             List<long> problemUsersList = new List<long>();
 

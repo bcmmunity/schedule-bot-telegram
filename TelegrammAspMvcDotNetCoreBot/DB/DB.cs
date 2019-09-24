@@ -19,7 +19,6 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             DbContextOptionsBuilder<MyContext> optionsBuilder = new DbContextOptionsBuilder<MyContext>();
             optionsBuilder.UseSqlServer(AppConfiguration.GetConnectionString("DefaultConnection"));
-
             return new MyContext(optionsBuilder.Options);
         }
     }
