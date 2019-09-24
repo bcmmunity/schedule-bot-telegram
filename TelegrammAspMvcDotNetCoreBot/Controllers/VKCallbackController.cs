@@ -23,11 +23,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
         private readonly IConfiguration _configuration;
         private readonly IVkApi _vkApi;
 
-        private static bool Dz { get; set; } = false;
-        private static bool TeacherSelection { get; set; } = false;
-
-        private static string Teacher = "";
-        private static string Date { get; set; } = String.Empty;
         private readonly SnUserDb userDb = new SnUserDb("Vk");
 
         public VkCallbackController(IVkApi vkApi, IConfiguration configuration)
@@ -66,6 +61,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             HomeWorkLogic homeWork = new HomeWorkLogic();
                             HomeWorkDB homeWorkDb = new HomeWorkDB();
                             VkKeyboard keyboard = new VkKeyboard();
+                            ModeSelection mode = new ModeSelection();
 
                             // Десериализация
                             var message = Message.FromJson(new VkResponse(updates.Object));
@@ -77,14 +73,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             loggingDb.AddRecordInLog(chatId,
                                 message.Text, DateTime.Now);
                             //Режим добавления ДЗ
-                            if (Dz && message.Text != "Отменить")
+                            if (mode.IsHWEnable(chatId) && message.Text != "Отменить")
                             {
                                 homeWorkDb.AddHomeWork(userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     userDb.CheckUserElements(chatId, "course"),
-                                    userDb.CheckUserElements(chatId, "group"), Date, message.Text);
-                                Dz = false;
-                                Date = String.Empty;
+                                    userDb.CheckUserElements(chatId, "group"), mode.GetDate(chatId), message.Text);
+                               mode.HWSwitch(chatId, false);
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
@@ -92,15 +87,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     Message = "Задание было успешно добавлено",
                                     Keyboard = response.VkMainKeyboard
                                 });
-                                return Ok();
+                                return Ok("ok");
                             }
 
-                            if (TeacherSelection && message.Text != "Отменить")
+                            if (mode.IsTeacherScheduleEnable(chatId) && message.Text != "Отменить")
                             {
                                 if (scheduleDb.IsTeacherExist(message.Text))
                                 {
-                                    TeacherSelection = false;
-                                    Teacher = message.Text;
+                                    mode.TeacherScheduleSwitch(chatId,false,message.Text);
                                     _vkApi.Messages.Send(new MessagesSendParams
                                     {
                                         RandomId = new DateTime().Millisecond,
@@ -111,14 +105,38 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                   
                                     return Ok("ok");
                                 }
-                                _vkApi.Messages.Send(new MessagesSendParams
+                                else if (scheduleDb.TeachersSearch(message.Text).Count != 0)
                                 {
-                                    RandomId = new DateTime().Millisecond,
-                                    PeerId = message.PeerId.Value,
-                                    Message = "Преподаватель не найден\nВведи ФИО преподавателя в формате Фамилия И. О.",
-                                    Keyboard = response.PayloadCancelKeyboard
-                                });
-                                return Ok();
+
+                                    List<Teacher> teachers = scheduleDb.TeachersSearch(message.Text);
+                                    string answer = "Выбери нужного преподавателя: \n";
+                                    foreach (var teacher in teachers)
+                                    {
+                                        answer += teacher.Name + "\n";
+                                    }
+
+
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message = answer,
+                                        Keyboard = response.PayloadCancelKeyboard
+                                    });
+                                    return Ok("ok");
+                                }
+                                else
+                                {
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message =
+                                            "Преподаватель не найден\nВведи ФИО преподавателя в формате Фамилия И. О.",
+                                        Keyboard = response.PayloadCancelKeyboard
+                                    });
+                                    return Ok("ok");
+                                }
                             }
 
 
@@ -172,8 +190,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         int c = Convert.ToInt32(Char.GetNumericValue(payload.Button[2]));
                                         if (a == 0)
                                         {
-                                            Dz = false;
-                                            Date = String.Empty;
+                                            mode.HWSwitch(chatId,false);
+                                            mode.TeacherScheduleSwitch(chatId,false);
                                             _vkApi.Messages.Send(new MessagesSendParams
                                             {
                                                 RandomId = new DateTime().Millisecond,
@@ -205,7 +223,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                                 {
                                                     RandomId = new DateTime().Millisecond,
                                                     PeerId = message.PeerId.Value,
-                                                    Message = AddHomework(b),
+                                                    Message = AddHomework(chatId,b),
                                                     Keyboard = response.PayloadCancelKeyboard
                                                 });
                                             else if (c == 1)
@@ -213,7 +231,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                                 {
                                                     RandomId = new DateTime().Millisecond,
                                                     PeerId = message.PeerId.Value,
-                                                    Message = AddHomework(-b),
+                                                    Message = AddHomework(chatId,-b),
                                                     Keyboard = response.PayloadCancelKeyboard
                                                 });
                                             return Ok("ok");
@@ -237,7 +255,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         }
                                         else if (a == 5 || a == 6)
                                         {
-                                            string result = schedule.TeacherScheduleOnTheDay(chatId,Teacher, a-4, b, "Vk");
+                                            string result = schedule.TeacherScheduleOnTheDay(chatId,mode.GetTeacherName(chatId), a-4, b, "Vk");
 
                                             _vkApi.Messages.Send(new MessagesSendParams
                                             {
@@ -271,7 +289,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             if (message.Text == "Сбросить")
                             {
-                                Dz = false;
+                                mode.HWSwitch(chatId,false);
+                                mode.TeacherScheduleSwitch(chatId,false);
                                 string[][] universities = response.UniversitiesArray(chatId);
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
@@ -448,12 +467,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             }
                             if (message.Text == "Расписание преподавателя" && userDb.CheckUserElements(chatId, "group") != "")
                             {
-                                TeacherSelection = true;
+                               
+                                mode.TeacherScheduleSwitch(chatId,true);
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Введи ФИО преподавателя в формате Фамилия И. О.",
+                                    Message = "Введи ФИО преподавателя в формате Фамилия И. О. или Фамилия",
                                     Keyboard = response.PayloadCancelKeyboard
                                 });
                                 return Ok("ok");
@@ -565,20 +585,22 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                 return Ok("ok");
             }
         }
-        private string AddHomework(int daysfromtoday)
+        private string AddHomework(long chatId,int daysfromtoday)
         {
             DateTime now = DateTime.Now.Date;
-            ResponseBuilder response = new ResponseBuilder("Vk");
-            Dz = true;
+            ResponseBuilder response = new ResponseBuilder("Telegram");
+            ModeSelection mode = new ModeSelection();
             if (daysfromtoday < 0)
-                Date = response.DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0)));
+            {
+                mode.HWSwitch(chatId, true, response.DateConverter(now.Subtract(new TimeSpan(-daysfromtoday, 0, 0, 0))));
+            }
             else if (daysfromtoday == 0)
             {
-                Date = response.DateConverter(now);
+                mode.HWSwitch(chatId, true, response.DateConverter(now));
             }
             else if (daysfromtoday > 0)
             {
-                Date = response.DateConverter(now.AddDays(daysfromtoday));
+                mode.HWSwitch(chatId, true, response.DateConverter(now.AddDays(daysfromtoday)));
             }
 
             return "Введите текст домашнего задания и отправьте его как обычное сообщение";

@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,6 +76,16 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return false;
         }
 
+        public List<Teacher> TeachersSearch(string name)
+        {
+            if (_db.Teachers.FirstOrDefault(t => t.Name.Contains(name)) != null)
+            {
+                List<Teacher> list = _db.Teachers.Where(t => t.Name.Contains(name)).ToList();
+                return list.GroupBy(x => x.Name).Select(x => x.First()).ToList();
+            }
+
+            return new List<Teacher>();
+        }
 
         public List<string> GetUniversities()
         {
@@ -113,12 +124,18 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
             List<string> result = new List<string>();
             List<Course> source = _db.Courses.Where(n => n.Facility == facultym).ToList();
+            List<int> sortList = new List<int>();
 
             foreach (Course item in source)
             {
-                result.Add(item.Name);
+                sortList.Add(Convert.ToInt32(item.Name));
             }
+            sortList.Sort();
 
+            foreach (int item in sortList)
+            {
+                result.Add(item.ToString());
+            }
             return result;
         }
 
