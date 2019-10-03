@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegrammAspMvcDotNetCoreBot.DB;
+using TelegrammAspMvcDotNetCoreBot.Models;
 using VkNet.Model.Keyboard;
 
 namespace TelegrammAspMvcDotNetCoreBot.Logic
@@ -403,11 +404,19 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 //forming buttons
 
-                string[][] buttons = new string[pageList.Count / 2 + 1][];
+                string[][] buttons = pageList.Count % 2 == 0 ? new string[pageList.Count / 2+1][] : new string[pageList.Count / 2 + 2][];
 
                 for (int i = 0; i < pageList.Count; i += 2)
                 {
-                    buttons[count] = new[] { pageList[i], pageList[i + 1] };
+                    if (i == pageList.Count - 1)
+                    {
+                        buttons[count] = new[] { pageList[i] }; //элементов нечетное кол-во
+                    }
+                    else
+                    {
+                        buttons[count] = new[] { pageList[i], pageList[i + 1] };
+                    }
+                    
                     count++;
                 }
 

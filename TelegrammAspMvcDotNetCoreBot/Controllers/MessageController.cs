@@ -114,7 +114,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     //Режим расписания
                     if (mode.IsTeacherScheduleEnable(chatId))
                     {
-                        
+                        int index;
+                        if (Int32.TryParse(message.Text, out index) && index > 0)
+                        {
+                            List<Teacher> teachers = mode.GetTeacherList(chatId);
+                            if (index - 1 < teachers.Count)
+                            {
+                                {
+                                    mode.TeacherScheduleSwitch(chatId, false, teachers[index - 1].Name);
+                                    await botClient.SendTextMessageAsync(chatId, "Выбери неделю и день", ParseMode.Default,
+                                        replyMarkup: response.InlineTeacherScheduleKeyboard);
+                                    return Ok();
+                                }
+                            }
+                            else
+                            {
+                                await botClient.SendTextMessageAsync(chatId, "Номер набран неправильно", ParseMode.Default,
+                                    replyMarkup: response.InlineCancelKeyboard);
+                                return Ok();
+                            }
+                        }
                         if (scheduleDb.IsTeacherExist(message.Text))
                         {
                             mode.TeacherScheduleSwitch(chatId,false,message.Text);
@@ -125,10 +144,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         else if (scheduleDb.TeachersSearch(message.Text).Count != 0)
                         {
                             List<Teacher> teachers = scheduleDb.TeachersSearch(message.Text);
-                            string answer = "Выбери нужного преподавателя: \n";
-                            foreach (var teacher in teachers)
+                            if (teachers.Count > 15)
                             {
-                                answer += teacher.Name + "\n";
+                                await botClient.SendTextMessageAsync(chatId, "Найдено слишком много преподавателей! Попробуй сделать запрос более точным", ParseMode.Default,
+                                    replyMarkup: response.InlineCancelKeyboard);
+                                return Ok();
+                            }
+                            mode.AddTeachersList(chatId,teachers);
+                            string answer = "Выбери нужного преподавателя и отправь его номер: \n";
+                            for(int i = 0; i<teachers.Count;i++)
+                            {
+                                answer += (i+1).ToString()+". "+teachers[i].Name + "\n";
                             }
 
 

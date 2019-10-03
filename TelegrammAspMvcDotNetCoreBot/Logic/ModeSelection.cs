@@ -37,6 +37,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             return false;
         }
 
+        public void AddTeachersList(long chatId, List<Teacher> teachersList)
+        {
+            foreach (var item in userTeacherScheduleList)
+            {
+                if (item.ChatId == chatId)
+                    item.TeachersList = teachersList;
+            }
+        }
+
         public string GetTeacherName(long chatId)
         {
             foreach (var item in userTeacherScheduleList)
@@ -46,6 +55,17 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             }
 
             return "";
+        }
+
+        public List<Teacher> GetTeacherList(long chatId)
+        {
+            foreach (var item in userTeacherScheduleList)
+            {
+                if (item.ChatId == chatId)
+                    return item.TeachersList;
+            }
+
+            return new List<Teacher>();
         }
 
         public void HWSwitch(long chatId, bool state, string date = "")

@@ -92,6 +92,37 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             if (mode.IsTeacherScheduleEnable(chatId) && message.Text != "Отменить")
                             {
+
+                                int index;
+                                if (Int32.TryParse(message.Text, out index) && index > 0)
+                                {
+                                    List<Teacher> teachers = mode.GetTeacherList(chatId);
+                                    if (index - 1 < teachers.Count)
+                                    {
+                                        mode.TeacherScheduleSwitch(chatId, false, teachers[index - 1].Name);
+                                        _vkApi.Messages.Send(new MessagesSendParams
+                                        {
+                                            RandomId = new DateTime().Millisecond,
+                                            PeerId = message.PeerId.Value,
+                                            Message = "Выбери неделю и день",
+                                            Keyboard = response.PayloadTeacherScheduleKeyboard
+                                        });
+
+                                        return Ok("ok");
+                                    }
+                                    else
+                                    {
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = "Номер набран неправильно",
+                                                Keyboard = response.PayloadCancelKeyboard
+                                            });
+                                            return Ok("ok");
+                                    }
+                                    
+                                }
                                 if (scheduleDb.IsTeacherExist(message.Text))
                                 {
                                     mode.TeacherScheduleSwitch(chatId,false,message.Text);
@@ -109,10 +140,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 {
 
                                     List<Teacher> teachers = scheduleDb.TeachersSearch(message.Text);
-                                    string answer = "Выбери нужного преподавателя: \n";
-                                    foreach (var teacher in teachers)
+                                    if (teachers.Count > 15)
                                     {
-                                        answer += teacher.Name + "\n";
+                                        _vkApi.Messages.Send(new MessagesSendParams
+                                        {
+                                            RandomId = new DateTime().Millisecond,
+                                            PeerId = message.PeerId.Value,
+                                            Message = "Найдено слишком много преподавателей! Попробуй сделать запрос более точным",
+                                            Keyboard = response.PayloadCancelKeyboard
+                                        });
+                                        return Ok("ok");
+                                    }
+
+                                    mode.AddTeachersList(chatId, teachers);
+                                    string answer = "Выбери нужного преподавателя и отправь его номер: \n";
+                                    for (int i = 0; i < teachers.Count; i++)
+                                    {
+                                        answer += (i + 1).ToString() + ". " + teachers[i].Name + "\n";
                                     }
 
 

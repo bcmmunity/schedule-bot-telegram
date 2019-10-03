@@ -14,7 +14,6 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         public ScheduleDB()
         {
             _db = new DB().Connect();
-            _db.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public bool IsUniversityExist(string university)
@@ -167,12 +166,30 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         public ScheduleDay GetSchedule(string university, string facility, string course, string group, int week,
             int day)
         {
+            //University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
-            List<ScheduleDay> li = _db.ScheduleWeeks.Include(v => v.Day).Where(l => l.Group.Course.Facility.University.Name == university).Where(n => n.Group.Name == group).FirstOrDefault(m => m.Week == week)
+            //Facility facultym = _db.Facilities.Where(l => l.University == universitym)
+            //    .FirstOrDefault(t => t.Name == facility);
+
+            //Course coursem = _db.Courses.Where(o => o.Facility == facultym)
+            //    .FirstOrDefault(t => t.Name == course);
+
+            //Group groupm = _db.Groups.Where(n => n.Course == coursem)
+            //    .FirstOrDefault(t => t.Name == group);
+
+            //List<ScheduleDay> li = _db.ScheduleWeeks
+            //    .Include(v => v.Day)
+            //    .Where(n => n.Group == groupm)
+            //    .FirstOrDefault(m => m.Week == week)
+            //    ?.Day.ToList();
+
+            //return _db.ScheduleDays.Include(r => r.Lesson)
+            //    .FirstOrDefault(f => f.ScheduleDayId == li.FirstOrDefault(n => n.Day == day).ScheduleDayId);
+
+            List<ScheduleDay> li = _db.ScheduleWeeks.Include(v => v.Day).Where(l => l.Group.Course.Facility.University.Name == university).Where(k => k.Group.Course.Facility.Name == facility).Where(j => j.Group.Course.Name == course).Where(n => n.Group.Name == group).FirstOrDefault(m => m.Week == week)
                 ?.Day.ToList();
 
-            return _db.ScheduleDays.Include(r => r.Lesson).FirstOrDefault(f => f.Day == day);
-
+            return _db.ScheduleDays.Include(r => r.Lesson).FirstOrDefault(f => f == li.FirstOrDefault(w => w.Day == day));
         }
 
         public ScheduleDay GetTeacherSchedule(string teacher, int week,

@@ -14,5 +14,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
         public long ChatId { get; set; }
         public bool IsActive { get; set; }
         public string TeacherName { get; set; }
+
+        public List<Teacher> TeachersList { get; set; }
     }
 }
