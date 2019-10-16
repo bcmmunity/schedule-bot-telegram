@@ -13,7 +13,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Models
 			Database.EnsureCreated();
 		}
 
-		public DbSet<University> Universities { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TeacherLesson>()
+                .HasKey(us => new { us.TeacherId, us.LessonId });
+
+            modelBuilder.Entity<TeacherLesson>()
+                .HasOne(us => us.Teacher)
+                .WithMany(e => e.TeacherLessons)
+                .HasForeignKey(k => k.TeacherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            modelBuilder.Entity<TeacherLesson>()
+                .HasOne(us => us.Lesson)
+                .WithMany(e => e.TeacherLessons)
+                .HasForeignKey(k => k.LessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+
+        public DbSet<University> Universities { get; set; }
 		public DbSet<Facility> Facilities { get; set; }
 		public DbSet<Course> Courses { get; set; }
 		public DbSet<Group> Groups { get; set; }

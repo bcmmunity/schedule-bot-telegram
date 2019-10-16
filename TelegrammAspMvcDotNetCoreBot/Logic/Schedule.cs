@@ -12,14 +12,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
         public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork)
         {
-            int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
+          //  int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
             if (day == 7)
                 return "Учебы нет";
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId,realWeekNum,socialNetwork) + "\n \n";
+            result += ", "+ GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
 
 
 
@@ -27,7 +27,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
                 userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), realWeekNum, day);
+                userDb.CheckUserElements(chatId, "group"), weekNum, day);
 
             List<Lesson> listPar = scheduleDay.Lesson.ToList();
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
@@ -36,14 +36,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string lessons = "";
             foreach (Lesson item in listPar)
             {
-                Teacher teacher = schedule.GeTeacher(item);
+                string teacher = schedule.GeTeacher(item);
                 lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name;
                 if (!string.IsNullOrEmpty(item.Type))
                     lessons += "\n" + item.Type;
                 if (!string.IsNullOrEmpty(item.Room))
                     lessons += "\n" + item.Room;
-                if (teacher != null)
-                    lessons += "\n" + teacher.Name;
+                if (!string.IsNullOrEmpty(teacher))
+                    lessons += "\n" + teacher;
                 lessons += "\n\n";
             }
 
@@ -64,20 +64,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
         public string TeacherScheduleOnTheDay(long chatId, string teacherName, int weekNum, int day, string socialNetwork)
         {
-            int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
+          //  int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
             if (day == 7)
-                return "Учебы нет";
+                return "Пар нет";
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId,realWeekNum,socialNetwork) + "\n \n";
+            result += ", "+ GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
 
 
 
             ScheduleDB schedule = new ScheduleDB();
 
-            ScheduleDay scheduleDay = schedule.GetTeacherSchedule(teacherName, realWeekNum, day);
+            ScheduleDay scheduleDay = schedule.GetTeacherSchedule(teacherName, weekNum, day);
 
             List<Lesson> listPar = scheduleDay.Lesson.ToList();
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
@@ -86,14 +86,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string lessons = "";
             foreach (Lesson item in listPar)
             {
-                Teacher teacher = schedule.GeTeacher(item);
+                string teacher = schedule.GeTeacher(item);
                  lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name;
                 if (!string.IsNullOrEmpty(item.Type))
                     lessons += "\n" + item.Type;
                 if (!string.IsNullOrEmpty(item.Room))
                     lessons += "\n" + item.Room;
-                if (teacher != null)
-                    lessons += "\n" + teacher.Name;
+                if (!string.IsNullOrEmpty(teacher))
+                    lessons += "\n" + teacher;
                 lessons += "\n\n";
             }
 
@@ -109,7 +109,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 return result;
             }
 
-            return "Учебы нет";
+            return "Пар нет";
         }
 
         private string ConvertToCorrectTimeFormat(string time)

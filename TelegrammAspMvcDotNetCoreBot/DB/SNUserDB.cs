@@ -35,6 +35,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return false;
         }
 
+        public byte GetUserScheduleType(long chatId)
+        {
+            string group = CheckUserElements(chatId, "group");
+
+            return _db.Groups.FirstOrDefault(g => g.Name == group).ScheduleType;
+        }
 
 
 

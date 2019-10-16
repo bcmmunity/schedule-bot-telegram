@@ -284,8 +284,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public string Today(long id)
         {
             int day;
-            int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+            byte scheduleType = userDb.GetUserScheduleType(id);
+            int weekNum;
+            if (scheduleType == 2)
+                weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
+            else if (scheduleType == 1)
+                weekNum = 1;
+            else
+                weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) -35; //35 - неделя на которой было 2 сентября
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 7;
@@ -301,12 +309,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public string Tommorrow(long id)
         {
             int day;
-            int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
+            byte scheduleType = userDb.GetUserScheduleType(id);
+            int weekNum;
+            if (scheduleType == 2)
+                weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1;
+            else if (scheduleType == 1)
+                weekNum = 1;
+            else
+                weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - 35; //35 - неделя на которой было 2 сентября
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 1;
-                weekNum = weekNum == 1 ? 2 : 1;
+                if (scheduleType == 2)
+                    weekNum = weekNum == 1 ? 2 : 1;
+                else
+                    weekNum++;
+
             }
             else
             {
