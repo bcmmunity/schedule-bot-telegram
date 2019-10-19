@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
@@ -41,15 +43,6 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
             return _db.Groups.FirstOrDefault(g => g.Name == group).ScheduleType;
         }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -114,5 +107,33 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return "";
         }
 
+        public List<SnUser> GetUsers(string university, string facility, string course,
+            string group)
+        {
+            if (!string.IsNullOrEmpty(university) && !string.IsNullOrEmpty(facility) && !string.IsNullOrEmpty(course) &&
+               !string.IsNullOrEmpty(group))
+           {
+              return _db.SnUsers.Include(u => u.University).Include(u => u.Facility)
+                   .Include(u => u.Course)
+                   .Include(u => u.Group).Where(n => n.SocialNetwork == SocialNetwork).Where(u => u.University.Name == university).Where(u => u.Facility.Name == facility).Where(u => u.Course.Name == course).Where(u => u.Group.Name == group).ToList();
+            }
+           else if (!string.IsNullOrEmpty(university) && !string.IsNullOrEmpty(facility) && !string.IsNullOrEmpty(course))
+           {
+               return _db.SnUsers.Include(u => u.University).Include(u => u.Facility)
+                   .Include(u => u.Course)
+                   .Where(n => n.SocialNetwork == SocialNetwork).Where(u => u.University.Name == university).Where(u => u.Facility.Name == facility).Where(u => u.Course.Name == course).ToList();
+           }
+           else if (!string.IsNullOrEmpty(university) && !string.IsNullOrEmpty(facility))
+           {
+               return _db.SnUsers.Include(u => u.University).Include(u => u.Facility)
+                   .Where(n => n.SocialNetwork == SocialNetwork).Where(u => u.University.Name == university).Where(u => u.Facility.Name == facility).ToList();
+           }
+           else if (!string.IsNullOrEmpty(university))
+           {
+               return _db.SnUsers.Include(u => u.University).Where(n => n.SocialNetwork == SocialNetwork).Where(u => u.University.Name == university).ToList();
+           }
+
+            return _db.SnUsers.Where(n => n.SocialNetwork == SocialNetwork).ToList();
+        }
     }
 }
