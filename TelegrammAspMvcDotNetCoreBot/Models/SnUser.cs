@@ -1,4 +1,5 @@
-﻿namespace TelegrammAspMvcDotNetCoreBot.Models
+﻿using System;
+namespace TelegrammAspMvcDotNetCoreBot.Models
 {
 
     public class SnUser
@@ -10,5 +11,6 @@
         public Facility Facility { get; set; }
         public Course Course { get; set; }
         public Group Group { get; set; }
+        public DateTime LastActiveDate { get; set; }
     }
 }
