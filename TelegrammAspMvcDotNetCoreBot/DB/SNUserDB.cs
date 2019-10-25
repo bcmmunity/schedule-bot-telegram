@@ -37,16 +37,6 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
 
 
-
-
-
-
-
-
-
-
-
-
         public void RecreateUser(long userId)
         {
             if (!CheckUser(userId)) return;
