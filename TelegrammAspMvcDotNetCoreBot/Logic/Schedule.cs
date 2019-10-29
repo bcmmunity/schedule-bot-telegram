@@ -56,11 +56,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
             result += ", " + GetWeekName(chatId, weekNumUse, socialNetwork) + "\n \n";
 
-            ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
+            List<Lesson> listPar = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
                 userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
                 userDb.CheckUserElements(chatId, "group"), weekNumUse, day);
-
-            List<Lesson> listPar = scheduleDay.Lesson.ToList();
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 
@@ -119,11 +117,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 weekNum = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
 
             }
-            else if (scheduleType == 2)
-            {
-               
-            }
-            else
+            else if (scheduleType != 2)
             {
                 int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
@@ -134,9 +128,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
             result += ", " + GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
 
-            ScheduleDay scheduleDay = schedule.GetTeacherSchedule(teacherName, weekNum, day);
 
-            List<Lesson> listPar = scheduleDay.Lesson.ToList();
+            List<Lesson> listPar = schedule.GetTeacherSchedule(teacherName, weekNum, day);
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 

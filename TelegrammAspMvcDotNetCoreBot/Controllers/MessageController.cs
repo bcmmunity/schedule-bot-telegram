@@ -17,7 +17,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
     public class MessageController : Controller
     {
         private readonly SnUserDb userDb = new SnUserDb("Telegram");
-
+        
         // GET api/values
         [HttpGet]
         public string Get()
@@ -94,9 +94,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     InputOnlineFile relaxSticker = new InputOnlineFile("CAADAgADEgADi6p7D-1w9zvhrRKPAg");
 
                     ResponseBuilder response = new ResponseBuilder("Telegram");
-                    ScheduleDB scheduleDb = new ScheduleDB();
                     HomeWorkDB homeWorkDb = new HomeWorkDB();
                     ModeSelection mode = new ModeSelection();
+                    ScheduleDB scheduleDb = new ScheduleDB();
 
                     TelegramKeyboard keybord = new TelegramKeyboard();
 
@@ -118,7 +118,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         if (Int32.TryParse(message.Text, out index) && index > 0)
                         {
                             List<Teacher> teachers = mode.GetTeacherList(chatId);
-                            if (index - 1 < teachers.Count)
+                            if (index - 1 < teachers?.Count)
                             {
                                 {
                                     mode.TeacherScheduleSwitch(chatId, false, teachers[index - 1].Name);
