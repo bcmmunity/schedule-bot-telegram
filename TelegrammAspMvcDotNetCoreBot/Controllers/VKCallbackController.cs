@@ -363,8 +363,19 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                                 return Ok("ok");
                             }
+                            else if (userDb.CheckUserElements(chatId, "university") == "" &&
+                                     !scheduleDb.IsUniversityExist(message.Text))
+                            {
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Неправильный ввод! Попробуй еще раз"
+                                });
+                                return Ok("ok");
+                            }
 
-                            if (userDb.CheckUserElements(chatId, "facility") == "" &&
+                                if (userDb.CheckUserElements(chatId, "facility") == "" &&
                                 scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
                             {
                                 string[][] courses = response.CoursesArray(chatId, message.Text);
@@ -378,8 +389,19 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                                 return Ok("ok");
                             }
-
-                            if (userDb.CheckUserElements(chatId, "course") == "" && scheduleDb.IsCourseExist(
+                                else if (userDb.CheckUserElements(chatId, "facility") == "" &&
+                                         !scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"),
+                                             message.Text))
+                                {
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message = "Неправильный ввод! Попробуй еще раз"
+                                    });
+                                    return Ok("ok");
+                            }
+                                if (userDb.CheckUserElements(chatId, "course") == "" && scheduleDb.IsCourseExist(
                                     userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     message.Text))
@@ -396,8 +418,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                                 return Ok("ok");
                             }
+                            else if (userDb.CheckUserElements(chatId, "course") == "" && !scheduleDb.IsCourseExist(
+                                         userDb.CheckUserElements(chatId, "university"),
+                                         userDb.CheckUserElements(chatId, "facility"),
+                                         message.Text))
+                                {
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message = "Неправильный ввод! Попробуй еще раз"
+                                    });
+                                    return Ok("ok");
+                            }
 
-                            if (userDb.CheckUserElements(chatId, "group") == "" && scheduleDb.IsGroupExist(
+                                if (userDb.CheckUserElements(chatId, "group") == "" && scheduleDb.IsGroupExist(
                                     userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     userDb.CheckUserElements(chatId, "course"), message.Text))
@@ -411,6 +446,19 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     Keyboard = response.VkMainKeyboard
                                 });
 
+                                return Ok("ok");
+                            }
+                                else if (userDb.CheckUserElements(chatId, "group") == "" && !scheduleDb.IsGroupExist(
+                                             userDb.CheckUserElements(chatId, "university"),
+                                             userDb.CheckUserElements(chatId, "facility"),
+                                             userDb.CheckUserElements(chatId, "course"), message.Text))
+                            {
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Неправильный ввод! Попробуй еще раз"
+                                });
                                 return Ok("ok");
                             }
 

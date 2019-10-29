@@ -205,7 +205,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                         return Ok();
                         }
-
+                        else if (userDb.CheckUserElements(chatId, "university") == "" &&
+                                 !scheduleDb.IsUniversityExist(message.Text))
+                        {
+                            await botClient.SendTextMessageAsync(chatId, "Неправильный ввод! Попробуй еще раз");
+                            return Ok();
+                    }
                         if (userDb.CheckUserElements(chatId, "facility") == "" &&
                             scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
                         {
@@ -215,6 +220,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             await botClient.SendStickerAsync(chatId, courseSticker, replyMarkup: keybord.GetKeyboard(courses));
                             return Ok();
                         }
+                        else if (userDb.CheckUserElements(chatId, "facility") == "" &&
+                                 !scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"),
+                                     message.Text))
+                        {
+                            await botClient.SendTextMessageAsync(chatId, "Неправильный ввод! Попробуй еще раз");
+                            return Ok();
+                    }
 
                         if (userDb.CheckUserElements(chatId, "course") == "" && scheduleDb.IsCourseExist(
                                 userDb.CheckUserElements(chatId, "university"), userDb.CheckUserElements(chatId, "facility"),
@@ -226,6 +238,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             await botClient.SendStickerAsync(chatId, groupSticker, replyMarkup: keybord.GetKeyboard(groups));
                             return Ok();
                         }
+                        else if (userDb.CheckUserElements(chatId, "course") == "" && !scheduleDb.IsCourseExist(
+                                     userDb.CheckUserElements(chatId, "university"),
+                                     userDb.CheckUserElements(chatId, "facility"),
+                                     message.Text))
+                        {
+                            await botClient.SendTextMessageAsync(chatId, "Неправильный ввод! Попробуй еще раз");
+                            return Ok();
+                    }
 
                         if (userDb.CheckUserElements(chatId, "group") == "" && scheduleDb.IsGroupExist(
                                 userDb.CheckUserElements(chatId, "university"), userDb.CheckUserElements(chatId, "facility"),
@@ -237,6 +257,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             await botClient.SendStickerAsync(chatId, workSticker, replyMarkup: response.TelegramMainKeyboard);
                             return Ok();
                         }
+                        else if (userDb.CheckUserElements(chatId, "group") == "" && !scheduleDb.IsGroupExist(
+                                     userDb.CheckUserElements(chatId, "university"), userDb.CheckUserElements(chatId, "facility"),
+                                     userDb.CheckUserElements(chatId, "course"), message.Text))
+                    {
+                        await botClient.SendTextMessageAsync(chatId, "Неправильный ввод! Попробуй еще раз");
+                        return Ok();
+                    }
 
                         if (message.Text == "Сегодня" && userDb.CheckUserElements(chatId, "group") != "")
                         {

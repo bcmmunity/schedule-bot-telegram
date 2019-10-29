@@ -26,7 +26,10 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                return Convert.ToBoolean(db.Execute("SELECT * FROM Universities WHERE Name = @university", new { university }));
+                University universitym = db.QueryFirstOrDefault<University>("SELECT * FROM Universities WHERE Name = @university", new { university });
+                bool result = universitym != null;
+
+                return result;
             }
 
             //University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
@@ -40,9 +43,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                return Convert.ToBoolean(db.Execute(
+                Facility facultym = db.QueryFirstOrDefault<Facility>(
                         "SELECT f.FacilityId, f.Name, f.UniversityId FROM Facilities as f JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility",
-                        new {university, facility}));
+                        new {university, facility});
+                bool result = facultym != null;
+
+                return result;
             }
             //University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
@@ -58,9 +64,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                return Convert.ToBoolean(db.Execute(
+                Course coursem = db.QueryFirstOrDefault<Course>(
                     "SELECT c.CourseId, c.Name, c.FacilityId FROM Courses as c JOIN Facilities as f on c.FacilityId = f.FacilityId JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility and c.Name = @course",
-                    new {university, facility, course}));
+                    new {university, facility, course});
+                bool result = coursem != null;
+
+                return result;
             }
             //University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
 
@@ -78,9 +87,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                return Convert.ToBoolean(db.Execute(
+                Group groupm = db.QueryFirstOrDefault<Group>(
                     "SELECT g.GroupId, g.Name, g.ScheduleType, g.CourseId FROM Groups as g JOIN Courses as c on c.CourseId = g.CourseId JOIN Facilities as f on c.FacilityId = f.FacilityId JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility and c.Name = @course and g.Name = @group",
-                    new {university, facility, course, group}));
+                    new { university, facility, course, group });
+                bool result = groupm != null;
+
+                return result;
             }
 
             //University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
