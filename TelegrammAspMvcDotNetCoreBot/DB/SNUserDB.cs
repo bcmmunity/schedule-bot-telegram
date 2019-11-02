@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Dapper;
+using MessagePack.Formatters;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
@@ -155,6 +157,14 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                         //user.Group = group;
                         //_db.SnUsers.Update(user);
                         break;
+                    }
+
+                    case "activity":
+                    {
+                        db.Execute(
+                            "Update SnUsers set LastActiveDate = @dateNow where SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
+                            new { dateNow = DateTime.Now, userId, SocialNetwork });
+                            break;
                     }
                 }
             }

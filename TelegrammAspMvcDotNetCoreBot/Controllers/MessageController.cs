@@ -64,6 +64,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     }
 
                     loggingDb.AddRecordInLog(chatId, message.Text, DateTime.Now);
+                    userDb.EditUser(chatId,"activity","");
 
                     if (!userDb.CheckUser(chatId))
                     {

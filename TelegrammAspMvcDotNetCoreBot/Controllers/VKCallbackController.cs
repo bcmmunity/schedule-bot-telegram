@@ -72,6 +72,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             loggingDb.AddRecordInLog(chatId,
                                 message.Text, DateTime.Now);
+                            userDb.EditUser(chatId, "activity", "");
                             //Режим добавления ДЗ
                             if (mode.IsHWEnable(chatId) && message.Text != "Отменить")
                             {
@@ -719,6 +720,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     });
 
                     errorLoggingDb.AddErrorInLog(chatId, "Message", message.Text, e.Source + ": " + e.Message, DateTime.Now);
+                    return Ok("ok");
                 }
 
                 return Ok("ok");
