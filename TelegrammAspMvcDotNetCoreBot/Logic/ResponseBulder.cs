@@ -235,7 +235,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             MainVariants = AnswerVariants(mainKeyboardButtonsNoKeyboard);
         }
 
-        public string[][] UniversitiesArray(long id)
+        public string[][] UniversitiesArray(long id, int page = 1)
         {
             if (!userDb.CheckUser(id))
             {
@@ -247,24 +247,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             }
 
             List<string> un = new ScheduleDB().GetUniversities();
-            return ButtonsFromList(un);
+            return ButtonsFromList(un,page);
         }
 
-        public string[][] FacilitiesArray(long id, string university)
+        public string[][] FacilitiesArray(long id, string university, int page = 1)
         {
             userDb.EditUser(id, "university", university);
 
             List<string> un = scheduleDb.GetFacilities(userDb.CheckUserElements(id, "university"));
-            return ButtonsFromList(un);
+            return ButtonsFromList(un, page);
         }
 
-        public string[][] CoursesArray(long id, string facility)
+        public string[][] CoursesArray(long id, string facility, int page = 1)
         {
             userDb.EditUser(id, "facility", facility);
 
             List<string> un = scheduleDb.GetCourses(userDb.CheckUserElements(id, "university"),
                 userDb.CheckUserElements(id, "facility"));
-            return ButtonsFromList(un);
+            return ButtonsFromList(un,page);
         }
 
         public string[][] GroupsArray(long id, string course, int page = 1)

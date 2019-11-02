@@ -58,14 +58,19 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     SnUserDb db = new SnUserDb(postResponse.SocialNetwork);
                     List<SnUser> usersForSending = db.GetUsers(postResponse.University,
                         postResponse.Facility, postResponse.Course, postResponse.Group);
-
+                    int i = 0;
                     if (postResponse.SocialNetwork == "Telegram")
                         foreach (var snUser in usersForSending)
                         {
-                           
                             await botClient.SendTextMessageAsync(snUser.SocialNetworkId,
                                 postResponse.Message,
                                 parseMode: ParseMode.Default);
+                            i++;
+                            if (i == 15)
+                            {
+                                await Task.Delay(2000); // 2 секунды
+                                i = 0;
+                            }
                         }
                     else if (postResponse.SocialNetwork == "Vk")
                         foreach (var snUser in usersForSending)
@@ -76,6 +81,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 PeerId = snUser.SocialNetworkId,
                                 Message = postResponse.Message
                             });
+                            i++;
+                            if (i == 15)
+                            {
+                                await Task.Delay(2000); // 2 секунды
+                                i = 0;
+                            }
                         }
 
                 }
@@ -84,11 +95,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     SnUserDb db = new SnUserDb("Telegram");
                     List<SnUser> usersForSending = db.GetUsers(postResponse.University,
                         postResponse.Facility, postResponse.Course, postResponse.Group);
+                    int i = 0;
                     foreach (var snUser in usersForSending)
                     {
                         await botClient.SendTextMessageAsync(snUser.SocialNetworkId,
                             postResponse.Message,
                             parseMode: ParseMode.Default);
+                        i++;
+                        if (i == 15)
+                        {
+                            await Task.Delay(2000); // 2 секунды
+                            i = 0;
+                        }
                     }
 
                     db = new SnUserDb("Vk");
@@ -102,6 +120,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             PeerId = snUser.SocialNetworkId,
                             Message = postResponse.Message
                         });
+                        i++;
+                        if (i == 15)
+                        {
+                            await Task.Delay(2000); // 2 секунды
+                            i = 0;
+                        }
                     }
                 }
 

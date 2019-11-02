@@ -136,7 +136,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string lessons = "";
             foreach (Lesson item in listPar)
             {
-                string teacher = item.TeachersNames;/*schedule.GeTeacher(item.LessonId);*/
+                string teacher = item.TeachersNames;
                  lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name;
                 if (!string.IsNullOrEmpty(item.Type))
                     lessons += "\n" + item.Type;
