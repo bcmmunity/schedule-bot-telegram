@@ -62,9 +62,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     if (postResponse.SocialNetwork == "Telegram")
                         foreach (var snUser in usersForSending)
                         {
-                            await botClient.SendTextMessageAsync(snUser.SocialNetworkId,
-                                postResponse.Message,
-                                parseMode: ParseMode.Default);
+                            try
+                            {
+                                await botClient.SendTextMessageAsync(snUser.SocialNetworkId,
+                                    postResponse.Message,
+                                    parseMode: ParseMode.Default);
+                            }
+                            catch (Exception e)
+                            {
+                                ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
+                                errorLoggingDb.AddErrorInLog(snUser.SocialNetworkId, "Sending", "", e.Source + ": " + e.Message, DateTime.Now);
+
+                                continue;
+                            }
+
                             i++;
                             if (i == 15)
                             {
@@ -75,12 +86,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     else if (postResponse.SocialNetwork == "Vk")
                         foreach (var snUser in usersForSending)
                         {
-                            _vkApi.Messages.Send(new MessagesSendParams
+                            try
                             {
-                                RandomId = new DateTime().Millisecond,
-                                PeerId = snUser.SocialNetworkId,
-                                Message = postResponse.Message
-                            });
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = snUser.SocialNetworkId,
+                                    Message = postResponse.Message
+                                });
+                            }
+                            catch (Exception e)
+                            {
+                                ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
+                                errorLoggingDb.AddErrorInLog(snUser.SocialNetworkId, "Sending", "", e.Source + ": " + e.Message, DateTime.Now);
+
+                                continue;
+                            }
+
                             i++;
                             if (i == 15)
                             {
@@ -98,9 +120,20 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     int i = 0;
                     foreach (var snUser in usersForSending)
                     {
-                        await botClient.SendTextMessageAsync(snUser.SocialNetworkId,
-                            postResponse.Message,
-                            parseMode: ParseMode.Default);
+                        try
+                        {
+                            await botClient.SendTextMessageAsync(snUser.SocialNetworkId,
+                                postResponse.Message,
+                                parseMode: ParseMode.Default);
+                        }
+                        catch (Exception e)
+                        {
+                            ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
+                            errorLoggingDb.AddErrorInLog(snUser.SocialNetworkId, "Sending", "", e.Source + ": " + e.Message, DateTime.Now);
+
+                            continue;
+                        }
+
                         i++;
                         if (i == 15)
                         {
@@ -114,12 +147,23 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         postResponse.Facility, postResponse.Course, postResponse.Group);
                     foreach (var snUser in usersForSending)
                     {
-                        _vkApi.Messages.Send(new MessagesSendParams
+                        try
                         {
-                            RandomId = new DateTime().Millisecond,
-                            PeerId = snUser.SocialNetworkId,
-                            Message = postResponse.Message
-                        });
+                            _vkApi.Messages.Send(new MessagesSendParams
+                            {
+                                RandomId = new DateTime().Millisecond,
+                                PeerId = snUser.SocialNetworkId,
+                                Message = postResponse.Message
+                            });
+                        }
+                        catch (Exception e)
+                        {
+                            ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
+                            errorLoggingDb.AddErrorInLog(snUser.SocialNetworkId, "Sending", "", e.Source + ": " + e.Message, DateTime.Now);
+
+                            continue;
+                        }
+                       
                         i++;
                         if (i == 15)
                         {

@@ -333,8 +333,16 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             await botClient.SendTextMessageAsync(chatId, response.UserInfo(chatId), parseMode: ParseMode.Default, replyMarkup: response.TelegramMainKeyboard);
                             return Ok();
                         }
+                    if (message.Text == "Сообщить о неверном расписании" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
+                    {
+                        ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
+                        errorLoggingDb.AddErrorInLog(chatId, "ScheduleError", message.Text, userDb.CheckUserElements(chatId, "university"), DateTime.Now);
 
-                        if (message.Text.Contains("Спасибо"))
+                        await botClient.SendTextMessageAsync(chatId, "Спасибо за помощь!\nМы скоро исправим это", parseMode: ParseMode.Default, replyMarkup: response.TelegramMainKeyboard);
+                        return Ok();
+                    }
+
+                    if (message.Text.Contains("Спасибо"))
                         {
                             await botClient.SendTextMessageAsync(chatId, "Всегда пожалуйста 😉", parseMode: ParseMode.Default, replyMarkup: response.TelegramMainKeyboard);
                             return Ok();
@@ -342,25 +350,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                         }
 
 
-                        //админка
-                        if (message.Text == "Оповестить " + "Stdsst!1*#" &&
-                            !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
-                        {
-                        SendMessages(new ErrorLoggingDB().GettingProblemUsers(),
-                            "Дорогие пользователи, мы приносим свои извинения за неполадки в работе нашего бота!\r\nМы столкнулись с некоторыми непредвиденными проблемами и устраняли их целый день\r\nНадеемся на ваше понимание, сейчас бот будет работать стабильнее\r\nЕсли у вас есть какие то пожелания или же вы знаете вуз, который мы можем ещё добавить, (позавчера мы добавили ещё 2 новых) можете написать сюда @nkuraevv\r\nБольшое спасибо за понимание! ",botClient);
-
-                        await botClient.SendTextMessageAsync(chatId, "Пользователи были успешно оповещены", parseMode: ParseMode.Default, replyMarkup: response.TelegramMainKeyboard);
-
-
-                        return Ok();
-
-                        }
-
-
-
-
-
-                    await botClient.SendTextMessageAsync(chatId, "Извините, такой команды я не знаю", parseMode: ParseMode.Default);
+                        await botClient.SendTextMessageAsync(chatId, "Извините, такой команды я не знаю", parseMode: ParseMode.Default);
                     return Ok();
                 }
 

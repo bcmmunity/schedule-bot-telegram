@@ -16,6 +16,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         // private readonly MyContext _db;
         string connectionString;
         private string SocialNetwork { get; }
+
         public SnUserDb(string socialNetwork)
         {
             //_db = new DB().Connect();
@@ -33,6 +34,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 db.Execute("INSERT INTO SnUsers (SocialNetwork, SocialNetworkId) Values (@SocialNetwork, @userId)",
                     new {SocialNetwork, userId});
             }
+
             //    SnUser user = new SnUser
             //{
             //    SocialNetworkId = userId,
@@ -46,7 +48,9 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                int isUserExists = db.QueryFirstOrDefault<int>("SELECT Count(*) FROM SnUsers WHERE SocialNetwork = @SocialNetwork AND SocialNetworkId = @userId", new {SocialNetwork,userId});
+                int isUserExists = db.QueryFirstOrDefault<int>(
+                    "SELECT Count(*) FROM SnUsers WHERE SocialNetwork = @SocialNetwork AND SocialNetworkId = @userId",
+                    new {SocialNetwork, userId});
                 if (isUserExists != 0)
                     return true;
                 return false;
@@ -60,6 +64,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             {
                 return db.QueryFirstOrDefault<byte>("SELECT ScheduleType FROM Groups WHERE Name = @group", new {group});
             }
+
             //return _db.Groups.FirstOrDefault(g => g.Name == group).ScheduleType;
         }
 
@@ -107,10 +112,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                         if (CheckUserElements(userId, "university") == "")
                             return;
                         int universityId =
-                            db.QueryFirstOrDefault<int>("SELECT UniversityId from SnUsers WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                                new { userId, SocialNetwork });
+                            db.QueryFirstOrDefault<int>(
+                                "SELECT UniversityId from SnUsers WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
+                                new {userId, SocialNetwork});
                         int facilityId =
-                            db.QueryFirstOrDefault<int>("SELECT FacilityId from Facilities WHERE Name = @param AND UniversityId = @universityId",
+                            db.QueryFirstOrDefault<int>(
+                                "SELECT FacilityId from Facilities WHERE Name = @param AND UniversityId = @universityId",
                                 new {param, universityId});
                         db.Execute(
                             "Update SnUsers set FacilityId = @facilityId where SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
@@ -126,11 +133,13 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                         if (CheckUserElements(userId, "facility") == "")
                             return;
                         int facilityId =
-                            db.QueryFirstOrDefault<int>("SELECT FacilityId from SnUsers WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                                new { userId, SocialNetwork });
+                            db.QueryFirstOrDefault<int>(
+                                "SELECT FacilityId from SnUsers WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
+                                new {userId, SocialNetwork});
                         int courseId =
-                            db.QueryFirstOrDefault<int>("SELECT CourseId from Courses WHERE Name = @param AND FacilityId = @facilityId",
-                                new {facilityId,param});
+                            db.QueryFirstOrDefault<int>(
+                                "SELECT CourseId from Courses WHERE Name = @param AND FacilityId = @facilityId",
+                                new {facilityId, param});
                         db.Execute(
                             "Update SnUsers set CourseId = @courseId where SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
                             new {courseId, userId, SocialNetwork});
@@ -145,11 +154,13 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                         if (CheckUserElements(userId, "course") == "")
                             return;
                         int courseId =
-                            db.QueryFirstOrDefault<int>("SELECT CourseId from SnUsers WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                                new { userId, SocialNetwork });
+                            db.QueryFirstOrDefault<int>(
+                                "SELECT CourseId from SnUsers WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
+                                new {userId, SocialNetwork});
                         int groupId =
-                            db.QueryFirstOrDefault<int>("SELECT GroupId from Groups WHERE Name = @param AND CourseId = @courseId",
-                                new { courseId, param });
+                            db.QueryFirstOrDefault<int>(
+                                "SELECT GroupId from Groups WHERE Name = @param AND CourseId = @courseId",
+                                new {courseId, param});
                         db.Execute(
                             "Update SnUsers set GroupId = @groupId where SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
                             new {groupId, userId, SocialNetwork});
@@ -163,8 +174,8 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                     {
                         db.Execute(
                             "Update SnUsers set LastActiveDate = @dateNow where SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                            new { dateNow = DateTime.Now, userId, SocialNetwork });
-                            break;
+                            new {dateNow = DateTime.Now, userId, SocialNetwork});
+                        break;
                     }
                 }
             }
@@ -196,6 +207,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
             //_db.SaveChanges();
         }
+
         public string CheckUserElements(long userId, string type)
         {
             using (IDbConnection db = new SqlConnection(connectionString))
@@ -206,16 +218,16 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                         return db.QueryFirstOrDefault<string>(
                             "SELECT u.Name FROM SnUsers as us JOIN Universities as u on u.UniversityId = us.UniversityId WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
                             new {userId, SocialNetwork});
-                        //if (_db.SnUsers.Include(y => y.University).FirstOrDefault(n =>
-                        //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)?.University != null)
-                        //    return _db.SnUsers.Include(y => y.University)
-                        //        .FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)
-                        //        .University.Name;
-                        //break;
+                    //if (_db.SnUsers.Include(y => y.University).FirstOrDefault(n =>
+                    //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)?.University != null)
+                    //    return _db.SnUsers.Include(y => y.University)
+                    //        .FirstOrDefault(n => n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)
+                    //        .University.Name;
+                    //break;
                     case "facility":
                         return db.QueryFirstOrDefault<string>(
                             "SELECT f.Name FROM SnUsers as us JOIN Facilities as f on f.FacilityId = us.FacilityId WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                            new { userId, SocialNetwork });
+                            new {userId, SocialNetwork});
                     //if (_db.SnUsers.Include(y => y.Facility).FirstOrDefault(n =>
                     //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)?.Facility != null)
                     //    return _db.SnUsers.Include(y => y.Facility).FirstOrDefault(n =>
@@ -224,7 +236,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                     case "course":
                         return db.QueryFirstOrDefault<string>(
                             "SELECT co.Name FROM SnUsers as us JOIN Courses as co on co.CourseId = us.CourseId WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                            new { userId, SocialNetwork });
+                            new {userId, SocialNetwork});
                     //if (_db.SnUsers.Include(y => y.Course).FirstOrDefault(n =>
                     //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)?.Course != null)
                     //    return _db.SnUsers.Include(y => y.Course).FirstOrDefault(n =>
@@ -233,12 +245,12 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                     case "group":
                         return db.QueryFirstOrDefault<string>(
                             "SELECT g.Name FROM SnUsers as us JOIN Groups as g on g.GroupId = us.GroupId WHERE SocialNetworkId = @userId and SocialNetwork = @SocialNetwork",
-                            new { userId, SocialNetwork });
-                        //if (_db.SnUsers.Include(y => y.Group).FirstOrDefault(n =>
-                        //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)?.Group != null)
-                        //    return _db.SnUsers.Include(y => y.Group).FirstOrDefault(n =>
-                        //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork).Group.Name;
-                        //break;
+                            new {userId, SocialNetwork});
+                    //if (_db.SnUsers.Include(y => y.Group).FirstOrDefault(n =>
+                    //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork)?.Group != null)
+                    //    return _db.SnUsers.Include(y => y.Group).FirstOrDefault(n =>
+                    //        n.SocialNetworkId == userId && n.SocialNetwork == SocialNetwork).Group.Name;
+                    //break;
                 }
 
                 return "";
@@ -268,7 +280,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 {
                     return db.Query<SnUser>(
                         "SELECT us.* FROM SnUsers as us JOIN Universities as u on u.UniversityId = us.UniversityId JOIN Facilities as f on f.FacilityId = us.FacilityId JOIN Courses as c on c.CourseId = us.CourseId WHERE u.Name = @university AND f.Name = @facility AND c.Name = @course AND SocialNetwork = @SocialNetwork",
-                        new { university, facility, course, SocialNetwork }).ToList();
+                        new {university, facility, course, SocialNetwork}).ToList();
                     //return _db.SnUsers.Include(u => u.University).Include(u => u.Facility)
                     //    .Include(u => u.Course)
                     //    .Where(n => n.SocialNetwork == SocialNetwork).Where(u => u.University.Name == university)
@@ -278,7 +290,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 {
                     return db.Query<SnUser>(
                         "SELECT us.* FROM SnUsers as us JOIN Universities as u on u.UniversityId = us.UniversityId JOIN Facilities as f on f.FacilityId = us.FacilityId WHERE u.Name = @university AND f.Name = @facility AND c.Name = @course AND SocialNetwork = @SocialNetwork",
-                        new { university, facility, SocialNetwork }).ToList();
+                        new {university, facility, SocialNetwork}).ToList();
                     //return _db.SnUsers.Include(u => u.University).Include(u => u.Facility)
                     //    .Where(n => n.SocialNetwork == SocialNetwork).Where(u => u.University.Name == university)
                     //    .Where(u => u.Facility.Name == facility).ToList();
@@ -287,15 +299,101 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 {
                     return db.Query<SnUser>(
                         "SELECT us.* FROM SnUsers as us JOIN Universities as u on u.UniversityId = us.UniversityId WHERE u.Name = @university AND SocialNetwork = @SocialNetwork",
-                        new { university, SocialNetwork }).ToList();
+                        new {university, SocialNetwork}).ToList();
                     //return _db.SnUsers.Include(u => u.University).Where(n => n.SocialNetwork == SocialNetwork)
                     //    .Where(u => u.University.Name == university).ToList();
                 }
 
                 return db.Query<SnUser>(
                     "SELECT * FROM SnUsers WHERE SocialNetwork = @SocialNetwork",
-                    new { SocialNetwork }).ToList();
+                    new {SocialNetwork}).ToList();
                 //return _db.SnUsers.Where(n => n.SocialNetwork == SocialNetwork).ToList();
+            }
+        }
+
+        public bool IsAliceUserInitialized()
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                int count = db.QueryFirstOrDefault<int>(
+                    "SELECT Count(*) FROM SnUsers WHERE SocialNetwork = @SocialNetwork",
+                    new { SocialNetwork });
+                if (count == 0)
+                {
+                    db.Execute(
+                        "Insert into SnUsers (SocialNetwork, SocialNetworkId) values (@SocialNetwork, 0)",
+                        new {SocialNetwork });
+                }
+                long chatId = db.QueryFirstOrDefault<long>(
+                    "SELECT SocialNetworkId FROM SnUsers WHERE SocialNetwork = @SocialNetwork",
+                    new {SocialNetwork});
+
+                if (chatId != 0)
+                    return true;
+                return false;
+            }
+        }
+
+        public bool IsAliceUserExists(long userId)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                int isUserExists = db.QueryFirstOrDefault<int>(
+                    "SELECT Count(*) FROM SnUsers WHERE SocialNetworkId = @userId",
+                    new {userId});
+                if (isUserExists != 0)
+                    return true;
+                return false;
+            }
+        }
+
+        public void CreateAliceUser(long userId)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                int universityId =
+                    db.QueryFirstOrDefault<int>(
+                        "SELECT UniversityId from SnUsers WHERE SocialNetworkId = @userId",
+                        new {userId});
+                int facilityId =
+                    db.QueryFirstOrDefault<int>(
+                        "SELECT FacilityId from SnUsers WHERE SocialNetworkId = @userId",
+                        new {userId});
+                int courseId =
+                    db.QueryFirstOrDefault<int>(
+                        "SELECT CourseId from SnUsers WHERE SocialNetworkId = @userId",
+                        new {userId});
+                int groupId =
+                    db.QueryFirstOrDefault<int>(
+                        "SELECT GroupId from SnUsers WHERE SocialNetworkId = @userId",
+                        new {userId});
+
+               db.Execute(
+                        "Update SnUsers set SocialNetworkId = @userId, UniversityId = @universityId, FacilityId = @facilityId, CourseId = @courseId, GroupId = @groupId where SocialNetwork = @SocialNetwork",
+                        new {userId, universityId, facilityId, courseId, groupId, SocialNetwork});
+            }
+        }
+
+        public long GetAliceUserId(string userId)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                return db.QueryFirstOrDefault<long>(
+                    "Select SocialNetworkId From SnUsers where SocialNetwork = @SocialNetwork",
+                    new {SocialNetwork});
+            }
+
+        }
+
+        public void DeleteAliceUser(string userId)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                db.Execute(
+                    "Update SnUsers set SocialNetworkId = 0, UniversityId = null, FacilityId = null, CourseId = null, GroupId = null where SocialNetwork = @SocialNetwork",
+                    new {SocialNetwork});
+
+
             }
         }
     }

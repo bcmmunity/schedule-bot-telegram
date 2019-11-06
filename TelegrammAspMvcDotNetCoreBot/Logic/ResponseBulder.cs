@@ -25,8 +25,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public InlineKeyboardMarkup InlineAddingHomeworkKeyboard { get; }
         public InlineKeyboardMarkup InlineCancelKeyboard { get; }
 
-        public MessageKeyboard PayloadScheduleKeyboard { get; }
-        public MessageKeyboard PayloadTeacherScheduleKeyboard { get; }
         public MessageKeyboard PayloadWatchingHomeworkKeyboard { get; }
         public MessageKeyboard PayloadAddingHomeworkKeyboard { get; }
         public MessageKeyboard PayloadCancelKeyboard { get; }
@@ -40,7 +38,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 new[] {"Сегодня", "Завтра"},
                 new[] {"Расписание"},
                 new[] {"Добавить ДЗ", "Что задали?"},
-                new[] {"Расписание преподавателя","О пользователе"}
+                new[] {"Расписание преподавателя","О пользователе"},
+                new[] { "Сообщить о неверном расписании" }
             };
             TelegramKeyboard telegramKeyboard = new TelegramKeyboard();
             VkKeyboard vkKeyboard = new VkKeyboard();
@@ -58,8 +57,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                     new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"},
                     new[] {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб"}
                 };
-
-
             string[][] scheduleTextVk =
             {
                 new[] { "Пн", "Пн"},  //слева верхняя
@@ -70,7 +67,6 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 new[] { "Сб", "Сб" },
                 new[] {"В главное меню"}
             };
-
             DateTime now = DateTime.Now.Date;
 
             string[][] homeworkText =
@@ -130,32 +126,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                     new[] {"110", "120", "130", "140", "150", "160"},
                     new[] {"210", "220", "230", "240", "250", "260"}
                 };
-            string[][] scheduleCallbackDataVk =
-            {
-                new[] {"110", "210"},
-                new[] { "120", "220" },
-                new[] { "130", "230" },
-                new[] { "140", "240" },
-                new[] { "150", "250" },
-                new[] { "160", "260" },
-                new [] {"000"}
-            };
+           
 
             string[][] scheduleTeacherCallbackData =
             {
                 new[] {"510", "520", "530", "540", "550", "560"},
                 new[] {"610", "620", "630", "640", "650", "660"}
             };
-            string[][] scheduleTeacherCallbackDataVk =
-            {
-                new[] {"510", "610"},
-                new[] { "520", "620" },
-                new[] { "530", "630" },
-                new[] { "540", "640" },
-                new[] { "550", "650" },
-                new[] { "560", "660" },
-                new [] {"000"}
-            };
+
 
             string[][] addingHomeworkCallbackData =
             {
@@ -197,21 +175,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             };
 
 
-            //Определение сегодняшнего дня
-
-            int day;
-            int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
-            if (DateTime.Now.DayOfWeek == 0)
-            {
-                day = 7;
-            }
-            else
-            {
-                day = (int)DateTime.Now.DayOfWeek;
-            }
-
-            string today = weekNum.ToString() + day.ToString() + "0";
+            
 
             InlineScheduleKeyboard = telegramKeyboard.GetInlineKeyboard(scheduleText, scheduleCallbackData);
             InlineTeacherScheduleKeyboard = telegramKeyboard.GetInlineKeyboard(scheduleText, scheduleTeacherCallbackData);
@@ -219,8 +183,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             InlineAddingHomeworkKeyboard = telegramKeyboard.GetInlineKeyboard(homeworkText, addingHomeworkCallbackData);
             InlineCancelKeyboard = telegramKeyboard.GetInlineKeyboard(cancelButton, cancelCallbackData);
 
-            PayloadScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleCallbackDataVk, today);
-            PayloadTeacherScheduleKeyboard = vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleTeacherCallbackDataVk, today);
+            
             PayloadWatchingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, watchingHomeworkCallbackDataVk);
             PayloadAddingHomeworkKeyboard = vkKeyboard.GetPayloadKeyboard(homeworkTextVk, addingHomeworkCallbackDataVk);
             PayloadCancelKeyboard = vkKeyboard.GetPayloadKeyboard(cancelButton, cancelCallbackData);
@@ -235,6 +198,89 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             MainVariants = AnswerVariants(mainKeyboardButtonsNoKeyboard);
         }
 
+        public MessageKeyboard GetVkScheduleKeyboard(long chatId, bool isTeacher)
+        {
+            byte scheduleType = userDb.GetUserScheduleType(chatId);
+            VkKeyboard vkKeyboard = new VkKeyboard();
+
+            string[][] scheduleTextVk =
+            {
+                new[] {"Пн", "Пн"}, //слева верхняя
+                new[] {"Вт", "Вт"},
+                new[] {"Ср", "Ср"},
+                new[] {"Чт", "Чт"},
+                new[] {"Пт", "Пт"},
+                new[] {"Сб", "Сб"},
+                new[] {"В главное меню"}
+            };
+
+            string[][] scheduleCallbackDataVk =
+            {
+                new[] {"110", "210"},
+                new[] {"120", "220"},
+                new[] {"130", "230"},
+                new[] {"140", "240"},
+                new[] {"150", "250"},
+                new[] {"160", "260"},
+                new[] {"000"}
+            };
+
+            string[][] scheduleTeacherCallbackDataVk =
+            {
+                new[] {"510", "610"},
+                new[] {"520", "620"},
+                new[] {"530", "630"},
+                new[] {"540", "640"},
+                new[] {"550", "650"},
+                new[] {"560", "660"},
+                new[] {"000"}
+            };
+            //Определение сегодняшнего дня
+
+            int day;
+            string today;
+            if (scheduleType == 2)
+            {
+                int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1;
+            
+                if (DateTime.Now.DayOfWeek == 0)
+                {
+                    day = 1;
+                    weekNum = weekNum == 1 ? 2 : 1;
+                }
+                else
+                {
+                    day = (int) DateTime.Now.DayOfWeek;
+                }
+
+                if (isTeacher)
+                    today = (weekNum+4).ToString() + day.ToString() + "0";
+                else
+                    today = weekNum.ToString() + day.ToString() + "0";
+            }
+            else
+            {
+                if (DateTime.Now.DayOfWeek == 0)
+                {
+                    day = 1;
+                }
+                else
+                {
+                    day = (int)DateTime.Now.DayOfWeek;
+                }
+                if (isTeacher)
+                    today = "5" + day.ToString() + "0";
+                else
+                    today = "1" + day.ToString() + "0";
+            }
+
+            if (isTeacher)
+                return vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleTeacherCallbackDataVk, today);
+            else
+                return vkKeyboard.GetPayloadKeyboard(scheduleTextVk, scheduleCallbackDataVk, today);
+
+        }
         public string[][] UniversitiesArray(long id, int page = 1)
         {
             if (!userDb.CheckUser(id))
@@ -281,7 +327,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             userDb.EditUser(id, "group", group);
         }
 
-        public string Today(long id)
+        public string Today(long id, bool isSimple = false)
         {
             int day;
             byte scheduleType = userDb.GetUserScheduleType(id);
@@ -302,10 +348,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 day = (int)DateTime.Now.DayOfWeek;
             }
 
-            return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
+            if (isSimple)
+                return schedule.SimpleScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
+            else
+                return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
         }
 
-        public string Tommorrow(long id)
+        public string Tommorrow(long id, bool isSimple = false)
         {
             int day;
             byte scheduleType = userDb.GetUserScheduleType(id);
@@ -338,6 +387,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 }
             }
 
+            if(isSimple)
+                return schedule.SimpleScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
+            else
             return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
         }
 
