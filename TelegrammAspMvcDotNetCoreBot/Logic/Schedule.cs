@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
@@ -10,7 +11,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
     public class Schedule
     {
 
-        public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork)
+        public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork,bool buttons = false)
         {
           //  int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
             if (day == 7)
@@ -18,16 +19,46 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
-            string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
-
-
 
             ScheduleDB schedule = new ScheduleDB();
+            byte scheduleType = userDb.GetUserScheduleType(chatId);
+            var weekNumUse = 0;
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+            if (buttons == false)
+            {
+                
+
+                if (scheduleType == 1)
+                    weekNumUse = 1;
+                else if (scheduleType != 0 && scheduleType != 2)
+                {
+                    int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
+                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+
+                }
+                else if (scheduleType == 2)
+                {
+                    weekNumUse = weekNum;
+                }
+                else
+                {
+                    int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+
+                    weekNumUse = weekNum == 1 ? weekNumNow : weekNumNow + 1;
+                }
+            }
+            else
+                weekNumUse = weekNum;
+
+
+            string result = "Расписание на " + ConvertWeekDayToRussian(day);
+            result += ", " + GetWeekName(chatId, weekNumUse, socialNetwork) + "\n \n";
 
             ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
                 userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), weekNum, day);
+                userDb.CheckUserElements(chatId, "group"), weekNumUse, day);
 
             List<Lesson> listPar = scheduleDay.Lesson.ToList();
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
@@ -50,12 +81,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             if (lessons != "")
             {
                 result += lessons;
-                int weekNumNow = GetWeekNum(chatId,(((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                                 CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1),socialNetwork);
-                if (weekNumNow == 1)
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                int weekNumNow = 0;
+                if (scheduleType != 0)
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+
+                result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
             }
 
@@ -70,12 +104,35 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
-            string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
-
-
-
+ 
             ScheduleDB schedule = new ScheduleDB();
+
+            byte scheduleType = userDb.GetUserScheduleType(chatId);
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+
+            if (scheduleType == 1)
+                weekNum = 1;
+            else if (scheduleType != 0 && scheduleType != 2)
+            {
+                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                     CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
+                weekNum = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+
+            }
+            else if (scheduleType == 2)
+            {
+               
+            }
+            else
+            {
+                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                     CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+
+                weekNum = weekNum == 1 ? weekNumNow : weekNumNow + 1;
+            }
+
+            string result = "Расписание на " + ConvertWeekDayToRussian(day);
+            result += ", " + GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
 
             ScheduleDay scheduleDay = schedule.GetTeacherSchedule(teacherName, weekNum, day);
 
@@ -100,12 +157,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             if (lessons != "")
             {
                 result += lessons;
-                int weekNumNow = GetWeekNum(chatId,(((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                                 CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1),socialNetwork);
-                if (weekNumNow == 1)
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                int weekNumNow = 0;
+                if (scheduleType != 0)
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+                result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
             }
 
@@ -176,10 +235,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 default:
                 {
-                    if (weekNum == 1)
-                        return "1 неделя";
-                    else
-                        return "2 неделя";
+                    return weekNum+" неделя";
                 }
             }
             
@@ -211,10 +267,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 default:
                 {
-                    if (weekNum == 1)
-                        return 1;
-                    else
-                        return 2;
+                    return weekNum;
                 }
             }
         }

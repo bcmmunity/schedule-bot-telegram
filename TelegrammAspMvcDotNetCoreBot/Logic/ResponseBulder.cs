@@ -285,15 +285,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         {
             int day;
             byte scheduleType = userDb.GetUserScheduleType(id);
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
             int weekNum;
-            if (scheduleType == 2)
+            if (scheduleType != 0)
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2+1;
-            else if (scheduleType == 1)
-                weekNum = 1;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType +1;
             else
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) -35; //35 - неделя на которой было 2 сентября
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek; 
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 7;
@@ -303,27 +302,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 day = (int)DateTime.Now.DayOfWeek;
             }
 
-            return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork);
+            return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
         }
 
         public string Tommorrow(long id)
         {
             int day;
             byte scheduleType = userDb.GetUserScheduleType(id);
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
             int weekNum;
-            if (scheduleType == 2)
+            if (scheduleType != 0)
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1;
-            else if (scheduleType == 1)
-                weekNum = 1;
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
             else
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - 35; //35 - неделя на которой было 2 сентября
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
             if (DateTime.Now.DayOfWeek == 0)
             {
                 day = 1;
-                if (scheduleType == 2)
-                    weekNum = weekNum == 1 ? 2 : 1;
+                if (scheduleType != 0)
+                    weekNum = weekNum == scheduleType ? 1 : weekNum+1 ;
                 else
                     weekNum++;
 
@@ -340,7 +338,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 }
             }
 
-            return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork);
+            return schedule.ScheduleOnTheDay(id, weekNum, day, _socialNetwork, true);
         }
 
         public string UserInfo(long id)
