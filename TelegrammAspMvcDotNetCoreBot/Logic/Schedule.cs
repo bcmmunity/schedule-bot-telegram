@@ -130,7 +130,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
 
             List<Lesson> listPar = schedule.GetTeacherSchedule(teacherName, weekNum, day);
-            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
+            TeacherLessonsIComparer<Lesson> comparer = new TeacherLessonsIComparer<Lesson>();
             listPar.Sort(comparer);
 
             string lessons = "";
@@ -163,7 +163,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             return "Пар нет";
         }
-
+        
         public string SimpleScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork, bool buttons = false)
         {
             //  int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);

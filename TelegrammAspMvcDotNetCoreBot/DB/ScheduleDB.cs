@@ -189,7 +189,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             using (IDbConnection db = new SqlConnection(connectionString))
             {
                 List<Lesson> allLessons = db.Query<Lesson>(
-                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sw.ScheduleWeekId = sd.ScheduleWeekId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId JOIN TeacherLesson as tl on tl.LessonId = l.LessonId JOIN Teachers as t on t.TeacherId = tl.TeacherId WHERE t.Name = @teacher and sw.Week = @week and sd.Day = @day",
+                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sw.ScheduleWeekId = sd.ScheduleWeekId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE l.TeachersNames LIKE '%' + @teacher + '%' and sw.Week = @week and sd.Day = @day",
                     new { teacher, week, day }).ToList();
                 List<string> timeList = new List<string>();
                 List<Lesson> result = new List<Lesson>();
