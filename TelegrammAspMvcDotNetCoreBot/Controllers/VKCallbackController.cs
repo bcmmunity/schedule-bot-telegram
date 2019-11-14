@@ -65,6 +65,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             // Десериализация
                             var message = Message.FromJson(new VkResponse(updates.Object));
+                            if (message == null)
+                                return Ok("ok");
 
                             var chatId = message.FromId ?? -1;
 
@@ -72,6 +74,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             loggingDb.AddRecordInLog(chatId,
                                 message.Text, DateTime.Now);
+                            userDb.EditUser(chatId, "activity", "");
                             //Режим добавления ДЗ
                             if (mode.IsHWEnable(chatId) && message.Text != "Отменить")
                             {
@@ -105,7 +108,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                             RandomId = new DateTime().Millisecond,
                                             PeerId = message.PeerId.Value,
                                             Message = "Выбери неделю и день",
-                                            Keyboard = response.PayloadTeacherScheduleKeyboard
+                                            Keyboard = response.GetVkScheduleKeyboard(chatId, true)
                                         });
 
                                         return Ok("ok");
@@ -131,7 +134,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         RandomId = new DateTime().Millisecond,
                                         PeerId = message.PeerId.Value,
                                         Message = "Выбери неделю и день",
-                                        Keyboard = response.PayloadTeacherScheduleKeyboard
+                                        Keyboard = response.GetVkScheduleKeyboard(chatId,true)
                                     });
                                   
                                     return Ok("ok");
@@ -193,7 +196,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
-                                    Keyboard = keyboard.GetKeyboard(universities)
+                                    Keyboard = keyboard.GetKeyboard(universities,"universities")
                                 });
                                 return Ok("ok");
                             }
@@ -211,18 +214,69 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         loggingDb.AddRecordInLog(chatId,
                                             payload.Button, DateTime.Now);
                                         int page = Convert.ToInt32(payload.Button.Split(';')[0]);
-                                        string course = payload.Button.Split(';')[1];
-
-
-                                        string[][] groups = response.GroupsArray(chatId, course, page);
-
-                                        _vkApi.Messages.Send(new MessagesSendParams
+                                        string keyboardMode = payload.Button.Split(';')[2];
+                                        if (keyboardMode == "universities")
                                         {
-                                            RandomId = new DateTime().Millisecond,
-                                            PeerId = message.PeerId.Value,
-                                            Message = "Переход на другую страницу",
-                                            Keyboard = keyboard.GetKeyboard(groups, course)
-                                        });
+                                            string[][] universities = response.UniversitiesArray(chatId, page);
+
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = "Переход на другую страницу",
+                                                Keyboard = keyboard.GetKeyboard(universities,"universities", "")
+                                            });
+                                            return Ok("ok");
+                                        }
+                                        else if (keyboardMode == "facilities")
+                                        {
+                                            string university = payload.Button.Split(';')[1];
+
+
+                                            string[][] groups = response.FacilitiesArray(chatId, university, page);
+
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = "Переход на другую страницу",
+                                                Keyboard = keyboard.GetKeyboard(groups, "facilities", university)
+                                            });
+                                            return Ok("ok");
+                                        }
+                                        else if (keyboardMode == "courses")
+                                        {
+                                            string facility = payload.Button.Split(';')[1];
+
+
+                                            string[][] groups = response.CoursesArray(chatId, facility, page);
+
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = "Переход на другую страницу",
+                                                Keyboard = keyboard.GetKeyboard(groups, "courses", facility)
+                                            });
+                                            return Ok("ok");
+                                        }
+                                        else if (keyboardMode == "groups")
+                                        {
+                                            string course = payload.Button.Split(';')[1];
+
+
+                                            string[][] groups = response.GroupsArray(chatId, course, page);
+
+                                            _vkApi.Messages.Send(new MessagesSendParams
+                                            {
+                                                RandomId = new DateTime().Millisecond,
+                                                PeerId = message.PeerId.Value,
+                                                Message = "Переход на другую страницу",
+                                                Keyboard = keyboard.GetKeyboard(groups, "groups", course)
+                                            });
+                                            return Ok("ok");
+                                        }
+                                        
 
                                         return Ok("ok");
                                     }
@@ -255,7 +309,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                                 RandomId = new DateTime().Millisecond,
                                                 PeerId = message.PeerId.Value,
                                                 Message = result,
-                                                Keyboard = response.PayloadScheduleKeyboard
+                                                Keyboard = response.GetVkScheduleKeyboard(chatId, false)
                                             });
 
                                             return Ok("ok");
@@ -306,7 +360,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                                 RandomId = new DateTime().Millisecond,
                                                 PeerId = message.PeerId.Value,
                                                 Message = result,
-                                                Keyboard = response.PayloadTeacherScheduleKeyboard
+                                                Keyboard = response.GetVkScheduleKeyboard(chatId,true)
                                             });
 
                                             return Ok("ok");
@@ -341,14 +395,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
-                                    Keyboard = keyboard.GetKeyboard(universities)
+                                    Keyboard = keyboard.GetKeyboard(universities,"universities")
                                 });
                                 return Ok("ok");
                             }
 
 
                             //Основной режим 
-                            if (userDb.CheckUserElements(chatId, "university") == "" &&
+                            if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "university")) &&
                             scheduleDb.IsUniversityExist(message.Text))
                             {
                                 string[][] facilities = response.FacilitiesArray(chatId, message.Text);
@@ -358,13 +412,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Message = "Теперь выбери факультет",
-                                    Keyboard = keyboard.GetKeyboard(facilities)
+                                    Keyboard = keyboard.GetKeyboard(facilities,"facilities", message.Text)
                                 });
 
                                 return Ok("ok");
                             }
+                            else if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "university")) &&
+                                     !scheduleDb.IsUniversityExist(message.Text))
+                            {
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Неправильный ввод! Попробуй еще раз"
+                                });
+                                return Ok("ok");
+                            }
 
-                            if (userDb.CheckUserElements(chatId, "facility") == "" &&
+                                if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "facility")) &&
                                 scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
                             {
                                 string[][] courses = response.CoursesArray(chatId, message.Text);
@@ -373,13 +438,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Message = "Теперь выбери курс",
-                                    Keyboard = keyboard.GetKeyboard(courses)
+                                    Keyboard = keyboard.GetKeyboard(courses,"courses", message.Text)
                                 });
 
                                 return Ok("ok");
                             }
-
-                            if (userDb.CheckUserElements(chatId, "course") == "" && scheduleDb.IsCourseExist(
+                                else if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "facility")) &&
+                                         !scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"),
+                                             message.Text))
+                                {
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message = "Неправильный ввод! Попробуй еще раз"
+                                    });
+                                    return Ok("ok");
+                            }
+                                if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "course")) && scheduleDb.IsCourseExist(
                                     userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     message.Text))
@@ -391,13 +467,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Message = "Теперь выбери группу",
-                                    Keyboard = keyboard.GetKeyboard(groups, message.Text)
+                                    Keyboard = keyboard.GetKeyboard(groups,"groups", message.Text)
                                 });
 
                                 return Ok("ok");
                             }
+                            else if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "course")) && !scheduleDb.IsCourseExist(
+                                         userDb.CheckUserElements(chatId, "university"),
+                                         userDb.CheckUserElements(chatId, "facility"),
+                                         message.Text))
+                                {
+                                    _vkApi.Messages.Send(new MessagesSendParams
+                                    {
+                                        RandomId = new DateTime().Millisecond,
+                                        PeerId = message.PeerId.Value,
+                                        Message = "Неправильный ввод! Попробуй еще раз"
+                                    });
+                                    return Ok("ok");
+                            }
 
-                            if (userDb.CheckUserElements(chatId, "group") == "" && scheduleDb.IsGroupExist(
+                                if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")) && scheduleDb.IsGroupExist(
                                     userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     userDb.CheckUserElements(chatId, "course"), message.Text))
@@ -413,8 +502,21 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                                 return Ok("ok");
                             }
+                                else if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")) && !scheduleDb.IsGroupExist(
+                                             userDb.CheckUserElements(chatId, "university"),
+                                             userDb.CheckUserElements(chatId, "facility"),
+                                             userDb.CheckUserElements(chatId, "course"), message.Text))
+                            {
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Неправильный ввод! Попробуй еще раз"
+                                });
+                                return Ok("ok");
+                            }
 
-                            if (message.Text == "Сегодня" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "Сегодня" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 string result = response.Today(chatId);
 
@@ -441,7 +543,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             }
 
-                            if (message.Text == "Завтра" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "Завтра" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 string result = response.Tommorrow(chatId);
 
@@ -473,19 +575,19 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             }
 
-                            if (message.Text == "Расписание" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "Расписание" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Message = "Выбери неделю и день\nОтсчет недель слева направо",
-                                    Keyboard = response.PayloadScheduleKeyboard
+                                    Keyboard = response.GetVkScheduleKeyboard(chatId,false)
                                 });
                                 return Ok("ok");
                             }
 
-                            if (message.Text == "Что задали?" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "Что задали?" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
@@ -497,7 +599,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             }
 
-                            if (message.Text == "Добавить ДЗ" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "Добавить ДЗ" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
 
                                 _vkApi.Messages.Send(new MessagesSendParams
@@ -509,7 +611,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 });
                                 return Ok("ok");
                             }
-                            if (message.Text == "Расписание преподавателя" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "Расписание преподавателя" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                
                                 mode.TeacherScheduleSwitch(chatId,true);
@@ -523,7 +625,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             }
 
-                            if (message.Text == "О пользователе" && userDb.CheckUserElements(chatId, "group") != "")
+                            if (message.Text == "О пользователе" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
@@ -534,10 +636,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 });
                                 return Ok("ok");
                             }
+                            if (message.Text == "Сообщить о неверном расписании" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
+                            {
+                                ErrorLoggingDB errorLoggingDb = new ErrorLoggingDB();
+                                errorLoggingDb.AddErrorInLog(chatId, "ScheduleError", message.Text, userDb.CheckUserElements(chatId, "university"), DateTime.Now);
 
-                           
+                                _vkApi.Messages.Send(new MessagesSendParams
+                                {
+                                    RandomId = new DateTime().Millisecond,
+                                    PeerId = message.PeerId.Value,
+                                    Message = "Спасибо за помощь!\nМы скоро исправим это",
+                                    Keyboard = response.VkMainKeyboard
+                                });
+                                return Ok("ok");
+                            }
 
-                            if (message.Text == "В главное меню" && userDb.CheckUserElements(chatId, "group") != "")
+
+
+                            if (message.Text == "В главное меню" && !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
@@ -549,26 +665,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             }
 
-                            //админка
-                            if (message.Text == "Оповестить " + _configuration["Config:AccessToken"] &&
-                                userDb.CheckUserElements(chatId, "group") != "")
-                            {
-                                //SendMessages(new ErrorLoggingDB().GettingProblemUsers(),
-                                //    "Здравствуйте!\nМы заметили, что вами не был осуществлен ввод группы. Если у вас возникли проблемы при работе с ботом, просто напишите ему, что именно не работает, снабжая вопрос надписью 'Помощь', и мы постараемся помочь вам. Также можно написать владельцу группы в личные сообщения.\nПросим извинения за возникшие проблемы.");
-
-                                
-                                _vkApi.Messages.Send(new MessagesSendParams
-                                {
-                                    RandomId = new DateTime().Millisecond,
-                                    PeerId = message.PeerId.Value,
-                                    Message = "Пользователи были оповещены успешно."
-                                });
-                                return Ok("ok");
-
-                            }
-
                             if (message.Text.Contains("Спасибо") &&
-                                userDb.CheckUserElements(chatId, "group") != "")
+                                !String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")))
                             {
                                 
 
@@ -588,14 +686,10 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             {
                                 RandomId = new DateTime().Millisecond,
                                 PeerId = message.PeerId.Value,
-                                Message = "Извините, такой команды я не знаю",
-                                Keyboard = response.VkMainKeyboard
+                                Message = "Извините, такой команды я не знаю"
                             });
+                            return Ok("ok");
 
-
-
-
-                            break;
                         }
 
 
@@ -624,6 +718,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                     });
 
                     errorLoggingDb.AddErrorInLog(chatId, "Message", message.Text, e.Source + ": " + e.Message, DateTime.Now);
+                    return Ok("ok");
                 }
 
                 return Ok("ok");

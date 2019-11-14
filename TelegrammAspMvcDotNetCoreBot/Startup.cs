@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Models;
 using TelegrammAspMvcDotNetCoreBot.Models.Telegramm;
 using VkNet;
@@ -49,7 +50,6 @@ namespace TelegrammAspMvcDotNetCoreBot
             // добавляем контекст MyContext в качестве сервиса в приложение
             services.AddDbContext<MyContext>(options =>
                 options.UseSqlServer(connection));
-
             services.AddMvc();
 
             services.AddSingleton<IVkApi>(sp =>

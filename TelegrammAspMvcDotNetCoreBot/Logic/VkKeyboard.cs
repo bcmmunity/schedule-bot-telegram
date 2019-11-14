@@ -5,7 +5,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 {
     public class VkKeyboard
     {
-        public MessageKeyboard GetKeyboard(string[][] buttons, string payload = "") //для создания обычных и постраничных клав
+        public MessageKeyboard GetKeyboard(string[][] buttons, string mode = "", string payload = "") //для создания обычных и постраничных клав
         {
 
             KeyboardBuilder keyboard = new KeyboardBuilder();
@@ -21,9 +21,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                         continue;
 
                     if (buttons[row][column].Contains("<"))
-                        keyboard.AddButton(buttons[row][column], buttons[row][column].Split(' ')[1] + ";" + payload, KeyboardButtonColor.Primary);
+                        keyboard.AddButton(buttons[row][column], buttons[row][column].Split(' ')[1] + ";" + payload + ";" +mode, KeyboardButtonColor.Primary);
                     else if (buttons[row][column].Contains(">"))
-                        keyboard.AddButton(buttons[row][column], buttons[row][column].Split(' ')[0] + ";" + payload, KeyboardButtonColor.Primary);
+                        keyboard.AddButton(buttons[row][column], buttons[row][column].Split(' ')[0] + ";" + payload + ";" + mode, KeyboardButtonColor.Primary);
                     else
                         keyboard.AddButton(buttons[row][column], "");
 

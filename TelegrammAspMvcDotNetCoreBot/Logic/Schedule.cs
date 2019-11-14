@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
@@ -10,7 +11,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
     public class Schedule
     {
 
-        public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork)
+        public string ScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork,bool buttons = false)
         {
           //  int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
             if (day == 7)
@@ -18,25 +19,53 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
-            string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
-
-
 
             ScheduleDB schedule = new ScheduleDB();
+            byte scheduleType = userDb.GetUserScheduleType(chatId);
+            var weekNumUse = 0;
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+            if (buttons == false)
+            {
+                
 
-            ScheduleDay scheduleDay = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
+                if (scheduleType == 1)
+                    weekNumUse = 1;
+                else if (scheduleType != 0 && scheduleType != 2)
+                {
+                    int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
+                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+
+                }
+                else if (scheduleType == 2)
+                {
+                    weekNumUse = weekNum;
+                }
+                else
+                {
+                    int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+
+                    weekNumUse = weekNum == 1 ? weekNumNow : weekNumNow + 1;
+                }
+            }
+            else
+                weekNumUse = weekNum;
+
+
+            string result = "Расписание на " + ConvertWeekDayToRussian(day);
+            result += ", " + GetWeekName(chatId, weekNumUse, socialNetwork) + "\n \n";
+
+            List<Lesson> listPar = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
                 userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), weekNum, day);
-
-            List<Lesson> listPar = scheduleDay.Lesson.ToList();
+                userDb.CheckUserElements(chatId, "group"), weekNumUse, day);
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 
             string lessons = "";
             foreach (Lesson item in listPar)
             {
-                string teacher = schedule.GeTeacher(item);
+                string teacher = item.TeachersNames;
                 lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name;
                 if (!string.IsNullOrEmpty(item.Type))
                     lessons += "\n" + item.Type;
@@ -50,12 +79,15 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             if (lessons != "")
             {
                 result += lessons;
-                int weekNumNow = GetWeekNum(chatId,(((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                                 CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1),socialNetwork);
-                if (weekNumNow == 1)
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                int weekNumNow = 0;
+                if (scheduleType != 0)
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+
+                result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
             }
 
@@ -70,23 +102,41 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             SnUserDb userDb = new SnUserDb(socialNetwork);
 
-            string result = "Расписание на " + ConvertWeekDayToRussian(day);
-            result += ", "+ GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
-
-
-
+ 
             ScheduleDB schedule = new ScheduleDB();
 
-            ScheduleDay scheduleDay = schedule.GetTeacherSchedule(teacherName, weekNum, day);
+            byte scheduleType = userDb.GetUserScheduleType(chatId);
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
 
-            List<Lesson> listPar = scheduleDay.Lesson.ToList();
-            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
+            if (scheduleType == 1)
+                weekNum = 1;
+            else if (scheduleType != 0 && scheduleType != 2)
+            {
+                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                     CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
+                weekNum = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+
+            }
+            else if (scheduleType != 2)
+            {
+                int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                     CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+
+                weekNum = weekNum == 1 ? weekNumNow : weekNumNow + 1;
+            }
+
+            string result = "Расписание на " + ConvertWeekDayToRussian(day);
+            result += ", " + GetWeekName(chatId, weekNum, socialNetwork) + "\n \n";
+
+
+            List<Lesson> listPar = schedule.GetTeacherSchedule(teacherName, weekNum, day);
+            TeacherLessonsIComparer<Lesson> comparer = new TeacherLessonsIComparer<Lesson>();
             listPar.Sort(comparer);
 
             string lessons = "";
             foreach (Lesson item in listPar)
             {
-                string teacher = schedule.GeTeacher(item);
+                string teacher = item.TeachersNames;
                  lessons += item.Number + " пара: " + ConvertToCorrectTimeFormat(item.Time) + "\n" + item.Name;
                 if (!string.IsNullOrEmpty(item.Type))
                     lessons += "\n" + item.Type;
@@ -100,12 +150,100 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             if (lessons != "")
             {
                 result += lessons;
-                int weekNumNow = GetWeekNum(chatId,(((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                                 CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1),socialNetwork);
-                if (weekNumNow == 1)
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                int weekNumNow = 0;
+                if (scheduleType != 0)
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
-                    result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+                result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
+                return result;
+            }
+
+            return "Пар нет";
+        }
+        
+        public string SimpleScheduleOnTheDay(long chatId, int weekNum, int day, string socialNetwork, bool buttons = false)
+        {
+            //  int realWeekNum = GetWeekNum(chatId, weekNum, socialNetwork);
+            if (day == 7)
+                return "Пар нет";
+
+            SnUserDb userDb = new SnUserDb(socialNetwork);
+
+
+            ScheduleDB schedule = new ScheduleDB();
+            byte scheduleType = userDb.GetUserScheduleType(chatId);
+            var weekNumUse = 0;
+            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+
+            if (scheduleType == 1)
+                    weekNumUse = 1;
+                else if (scheduleType != 0 && scheduleType != 2)
+                {
+                    int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
+                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+
+                }
+                else if (scheduleType == 2)
+                {
+                    weekNumUse = weekNum;
+                }
+                else
+                {
+                    int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+
+                    weekNumUse = weekNum == 1 ? weekNumNow : weekNumNow + 1;
+                }
+            
+
+
+            
+
+            List<Lesson> listPar = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
+                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
+                userDb.CheckUserElements(chatId, "group"), weekNumUse, day);
+            LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
+            listPar.Sort(comparer);
+
+            string result;
+
+            if (day == (int)DateTime.Now.DayOfWeek)
+                result = "Сегодня будет "+ listPar.Count+ " "+ GetLessonSpelling(listPar.Count)+"\n";
+            else if (((day == ((int)DateTime.Now.DayOfWeek + 1) % 7) && DateTime.Now.DayOfWeek != 0) || (day == 1 && DateTime.Now.DayOfWeek == 0))
+                result = "Завтра будет " + listPar.Count + " " + GetLessonSpelling(listPar.Count) + "\n";
+            else
+                result = "В "+ ConvertWeekDayToRussian(day)+" будет " + listPar.Count + " " + GetLessonSpelling(listPar.Count) + "\n";
+
+
+            string lessons = "";
+            foreach (Lesson item in listPar)
+            {
+                string teacher = item.TeachersNames;
+                lessons += GetCountableNumber(item.Number) + " пара в " + ConvertToCorrectTimeFormat(item.Time).Split(" - ")[0] + "\n" + item.Name.Replace('.',' ');
+                if (!string.IsNullOrEmpty(item.Type))
+                    lessons += "\n" + item.Type.Replace('(',' ').Replace(')',' ').Replace('.',' ');
+                if (!string.IsNullOrEmpty(item.Room))
+                    lessons += "\nв " + item.Room.Replace('.', ' ');
+                if (!string.IsNullOrEmpty(teacher))
+                    lessons += "\n Ведёт " + teacher.Split(' ')[0];
+                lessons += "\n\n";
+            }
+
+            if (lessons != "")
+            {
+                result += lessons;
+                int weekNumNow = 0;
+                if (scheduleType != 0)
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
+                else
+                    weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+                result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
             }
 
@@ -176,10 +314,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 default:
                 {
-                    if (weekNum == 1)
-                        return "1 неделя";
-                    else
-                        return "2 неделя";
+                    return weekNum+" неделя";
                 }
             }
             
@@ -211,11 +346,48 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
                 default:
                 {
-                    if (weekNum == 1)
-                        return 1;
-                    else
-                        return 2;
+                    return weekNum;
                 }
+            }
+        }
+
+        private string GetLessonSpelling(int lessonsCount)
+        {
+            int lastNumber = lessonsCount % 10;
+            if (lastNumber == 1)
+                return "пара";
+            else if (lastNumber > 1 && lastNumber< 5)
+                return "пары";
+            else
+                return "пар";
+        }
+
+        private string GetCountableNumber(string number)
+        {
+            switch (number)
+            {
+                case "1":
+                    return "Первая";
+                case "2":
+                    return "Вторая";
+                case "3":
+                    return "Третья";
+                case "4":
+                    return "Четвёртая";
+                case "5":
+                    return "Пятая";
+                case "6":
+                    return "Шестая";
+                case "7":
+                    return "Седьмая";
+                case "8":
+                    return "Восьмая";
+                case "9":
+                    return "Девятая";
+                case "10":
+                    return "Десятая";
+                default:
+                    return "";
             }
         }
     }

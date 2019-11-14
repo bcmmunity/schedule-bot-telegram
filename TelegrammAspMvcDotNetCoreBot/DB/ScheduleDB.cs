@@ -1,231 +1,209 @@
 using System;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-using TelegrammAspMvcDotNetCoreBot.Logic;
+using Dapper;
 using TelegrammAspMvcDotNetCoreBot.Models;
 
 namespace TelegrammAspMvcDotNetCoreBot.DB
 {
+
     public class ScheduleDB
     {
-        private readonly MyContext _db;
-
+        string connectionString;
         public ScheduleDB()
         {
-            _db = new DB().Connect();
+            DB db = new DB();
+            connectionString = db.GetConnectionString();
         }
 
         public bool IsUniversityExist(string university)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                University universitym = db.QueryFirstOrDefault<University>("SELECT * FROM Universities WHERE Name = @university", new { university });
+                bool result = universitym != null;
 
-            bool result = universitym != null;
+                return result;
+            }
 
-            return result;
         }
 
         public bool IsFacilityExist(string university, string facility)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                Facility facultym = db.QueryFirstOrDefault<Facility>(
+                        "SELECT f.FacilityId, f.Name, f.UniversityId FROM Facilities as f JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility",
+                        new {university, facility});
+                bool result = facultym != null;
 
-            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-                .FirstOrDefault(t => t.Name == facility);
-
-            bool result = facultym != null;
-
-            return result;
+                return result;
+            }
         }
 
         public bool IsCourseExist(string university, string facility, string course)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                Course coursem = db.QueryFirstOrDefault<Course>(
+                    "SELECT c.CourseId, c.Name, c.FacilityId FROM Courses as c JOIN Facilities as f on c.FacilityId = f.FacilityId JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility and c.Name = @course",
+                    new {university, facility, course});
+                bool result = coursem != null;
 
-            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-                .FirstOrDefault(t => t.Name == facility);
-
-            Course coursem = _db.Courses.Where(o => o.Facility == facultym).FirstOrDefault(t => t.Name == course);
-
-            bool result = coursem != null;
-
-            return result;
+                return result;
+            }
         }
 
         public bool IsGroupExist(string university, string facility, string course, string group)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                Group groupm = db.QueryFirstOrDefault<Group>(
+                    "SELECT g.GroupId, g.Name, g.ScheduleType, g.CourseId FROM Groups as g JOIN Courses as c on c.CourseId = g.CourseId JOIN Facilities as f on c.FacilityId = f.FacilityId JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility and c.Name = @course and g.Name = @group",
+                    new { university, facility, course, group });
+                bool result = groupm != null;
 
-            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-                .FirstOrDefault(t => t.Name == facility);
-
-            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-                .FirstOrDefault(t => t.Name == course);
-
-            Group groupm = _db.Groups.Where(n => n.Course == coursem)
-                .FirstOrDefault(t => t.Name == group);
-
-            bool result = groupm != null;
-
-            return result;
+                return result;
+            }
         }
 
         public bool IsTeacherExist(string name)
         {
-            if (_db.Teachers.FirstOrDefault(t => t.Name == name) != null)
-                return true;
-            return false;
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                Teacher searchingTeacher = db.QueryFirstOrDefault<Teacher>("SELECT * From Teachers where Name = @name", new {name});
+                if (searchingTeacher != null)
+                    return true;
+                return false;
+            }
         }
 
         public List<Teacher> TeachersSearch(string name)
         {
-            if (_db.Teachers.FirstOrDefault(t => t.Name.Contains(name)) != null)
+            using (IDbConnection db = new SqlConnection(connectionString))
             {
-                List<Teacher> list = _db.Teachers.Where(t => t.Name.Contains(name)).ToList();
-                return list.GroupBy(x => x.Name).Select(x => x.First()).ToList();
-            }
+                if (db.QueryFirstOrDefault<Teacher>("SELECT * From Teachers where Name LIKE '%' + @name + '%'", new {name}) != null)
+                {
+                    List<Teacher> list = db.Query<Teacher>("SELECT * From Teachers where Name LIKE '%' + @name + '%'", new { name }).ToList();
+                    return list.GroupBy(x => x.Name).Select(x => x.First()).ToList();
+                }
 
-            return new List<Teacher>();
+                return new List<Teacher>();
+            }
         }
 
         public List<string> GetUniversities()
         {
-            List<string> result = new List<string>();
-            List<University> source = _db.Universities.ToList();
-
-            foreach (University item in source)
+            
+           
+            using (IDbConnection db = new SqlConnection(connectionString))
             {
-                result.Add(item.Name);
-            }
+                List<University> source = db.Query<University>("SELECT * FROM Universities").ToList();
+                List<string> result = new List<string>();
+                foreach (University item in source)
+                {
+                    result.Add(item.Name);
+                }
 
-            return result;
+                result.Reverse();
+
+                return result;
+            }
         }
 
         public List<string> GetFacilities(string university)
         {
-            List<string> result = new List<string>();
-
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-
-            List<Facility> source = _db.Facilities.Where(n => n.University == universitym).ToList();
-
-            foreach (Facility item in source)
+            using (IDbConnection db = new SqlConnection(connectionString))
             {
-                result.Add(item.Name);
-            }
+                List<Facility> source = db.Query<Facility>(
+                    "SELECT f.FacilityId, f.Name, f.UniversityId FROM Facilities as f JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university",
+                    new { university }).ToList();
+                List<string> result = new List<string>();
+                foreach (Facility item in source)
+                {
+                    result.Add(item.Name);
+                }
 
-            return result;
+                return result;
+            }
         }
 
         public List<string> GetCourses(string university, string facility)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-                .FirstOrDefault(t => t.Name == facility);
-
-            List<string> result = new List<string>();
-            List<Course> source = _db.Courses.Where(n => n.Facility == facultym).ToList();
-            List<int> sortList = new List<int>();
-
-            foreach (Course item in source)
+            using (IDbConnection db = new SqlConnection(connectionString))
             {
-                sortList.Add(Convert.ToInt32(item.Name));
-            }
-            sortList.Sort();
+                List<Course> source = db.Query<Course>(
+                    "SELECT c.CourseId, c.Name, c.FacilityId FROM Courses as c JOIN Facilities as f on c.FacilityId = f.FacilityId JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility",
+                    new { university, facility}).ToList();
+                List<int> sortList = new List<int>();
+                List<string> result = new List<string>();
 
-            foreach (int item in sortList)
-            {
-                result.Add(item.ToString());
+                foreach (Course item in source)
+                {
+                    sortList.Add(Convert.ToInt32(item.Name));
+                }
+                sortList.Sort();
+
+                foreach (int item in sortList)
+                {
+                    result.Add(item.ToString());
+                }
+                return result;
             }
-            return result;
         }
 
         public List<string> GetGroups(string university, string facility, string course)
         {
-            University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-            Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-                .FirstOrDefault(t => t.Name == facility);
-            Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-                .FirstOrDefault(t => t.Name == course);
-
-            List<string> result = new List<string>();
-            List<Group> source = _db.Groups.Where(n => n.Course == coursem).ToList();
-
-            foreach (Group item in source)
+            using (IDbConnection db = new SqlConnection(connectionString))
             {
-                result.Add(item.Name);
-            }
+                List<Group> source = db.Query<Group>(
+                    "SELECT g.GroupId, g.Name, g.ScheduleType, g.CourseId FROM Groups as g JOIN Courses as c on c.CourseId = g.CourseId JOIN Facilities as f on c.FacilityId = f.FacilityId JOIN Universities as u on f.UniversityId = u.UniversityId where u.Name = @university and f.Name = @facility and c.Name = @course",
+                    new { university, facility, course}).ToList();
+                List<string> result = new List<string>();
 
-            return result;
-        }
-
-        public string GeTeacher(Lesson lesson)
-        {
-            return _db.Lessons.FirstOrDefault(l => l.LessonId == lesson.LessonId)?.TeachersNames;
-
-        }
-        public ScheduleDay GetSchedule(string university, string facility, string course, string group, int week,
-            int day)
-        {
-            //University universitym = _db.Universities.FirstOrDefault(m => m.Name == university);
-
-            //Facility facultym = _db.Facilities.Where(l => l.University == universitym)
-            //    .FirstOrDefault(t => t.Name == facility);
-
-            //Course coursem = _db.Courses.Where(o => o.Facility == facultym)
-            //    .FirstOrDefault(t => t.Name == course);
-
-            //Group groupm = _db.Groups.Where(n => n.Course == coursem)
-            //    .FirstOrDefault(t => t.Name == group);
-
-            //List<ScheduleDay> li = _db.ScheduleWeeks
-            //    .Include(v => v.Day)
-            //    .Where(n => n.Group == groupm)
-            //    .FirstOrDefault(m => m.Week == week)
-            //    ?.Day.ToList();
-
-            //return _db.ScheduleDays.Include(r => r.Lesson)
-            //    .FirstOrDefault(f => f.ScheduleDayId == li.FirstOrDefault(n => n.Day == day).ScheduleDayId);
-
-            List<ScheduleDay> li = _db.ScheduleWeeks.Include(v => v.Day).Where(l => l.Group.Course.Facility.University.Name == university).Where(k => k.Group.Course.Facility.Name == facility).Where(j => j.Group.Course.Name == course).Where(n => n.Group.Name == group).FirstOrDefault(m => m.Week == week)
-                ?.Day.ToList();
-
-            return _db.ScheduleDays.Include(r => r.Lesson).FirstOrDefault(f => f == li.FirstOrDefault(w => w.Day == day));
-        }
-
-        public ScheduleDay GetTeacherSchedule(string teacher, int week,
-            int day)
-        {
-            List<Lesson> listPar = new List<Lesson>();
-
-            List<Lesson> lessons = _db.Lessons.Include(t => t.TeacherLessons).Where(t => t.TeacherLessons.FirstOrDefault(l=>l.Teacher.Name==teacher) != null).ToList();
-            List<ScheduleDay> scheduleDays = _db.ScheduleDays.Include(l => l.Lesson).Where(d => d.Day == day).ToList();
-
-            List<string> previousLessons = new List<string>();
-            foreach (var scDay in scheduleDays)
-            {
-                foreach (var lesson in scDay.Lesson)
+                foreach (Group item in source)
                 {
-                    if (lessons.Contains(lesson) && !previousLessons.Contains(lesson.Number) &&
-                        _db.ScheduleWeeks.Include(d => d.Day).FirstOrDefault(d => d.Day.Contains(scDay))?.Week == week)
-                    {
-                        listPar.Add(lesson);
-                        previousLessons.Add(lesson.Number);
-                    }
-
-
+                    result.Add(item.Name);
                 }
 
-
-
+                return result;
             }
+        }
 
-
-            ScheduleDay scheduleDay = new ScheduleDay
+        public List<Lesson> GetSchedule(string university, string facility, string course, string group, int week,
+            int day)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
             {
-                Day = day,
-                Lesson = listPar
-            };
-            return scheduleDay;
+                return db.Query<Lesson>(
+                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sd.ScheduleWeekId = sw.ScheduleWeekId JOIN Groups as g on g.GroupId = sw.GroupId JOIN Courses as c ON c.CourseId = g.CourseId JOIN Facilities as f ON f.FacilityId = c.FacilityId JOIN Universities as u ON u.UniversityId = f.UniversityId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE u.Name = @university and f.Name = @facility and c.Name = @course and g.Name = @group and sw.Week = @week and sd.Day = @day",
+                    new {university, facility, course, group, week, day}).ToList();
+            }
+        }
+
+        public List<Lesson> GetTeacherSchedule(string teacher, int week,
+            int day)
+        {
+            using (IDbConnection db = new SqlConnection(connectionString))
+            {
+                List<Lesson> allLessons = db.Query<Lesson>(
+                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sw.ScheduleWeekId = sd.ScheduleWeekId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE l.TeachersNames LIKE '%' + @teacher + '%' and sw.Week = @week and sd.Day = @day",
+                    new { teacher, week, day }).ToList();
+                List<string> timeList = new List<string>();
+                List<Lesson> result = new List<Lesson>();
+                foreach (var lesson in allLessons)
+                {
+                    if (!timeList.Contains(lesson.Time))
+                    {
+                        timeList.Add(lesson.Time);
+                        result.Add(lesson);
+                    }
+                }
+
+                return result;
+            }
         }
 
       
