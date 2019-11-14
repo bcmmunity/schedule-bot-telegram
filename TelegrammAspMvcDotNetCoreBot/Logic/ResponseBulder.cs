@@ -284,7 +284,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public string Today(long id)
         {
             int day;
-            byte scheduleType = userDb.GetUserScheduleType(id);
+            byte scheduleType = 1;
             int weekNum;
             if (scheduleType == 2)
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
@@ -309,7 +309,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
         public string Tommorrow(long id)
         {
             int day;
-            byte scheduleType = userDb.GetUserScheduleType(id);
+            byte scheduleType = 1;
             int weekNum;
             if (scheduleType == 2)
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,

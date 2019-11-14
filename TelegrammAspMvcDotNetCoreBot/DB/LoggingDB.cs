@@ -86,6 +86,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
                     //if (universityFilter != "all") Users = Users.Where(n => n.SnUser.University.Name == universityFilter);
                     if (networkFilter != "all") Users = Users.Where(n => n.SnUser.SocialNetwork == networkFilter);
+
                     int numberOfUsers = Users.Count();
                     total += numberOfUsers;
                     result[count++] = $"{i.Date.ToShortDateString()} : {numberOfUsers}  Users ";
@@ -98,7 +99,34 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return result;
         }
 
-        
+        public string[] MessagesCount(DateTime from, DateTime to, out int total, string universityFilter = "all", string networkFilter = "all")
+        {
+            string[] result = new string[(int)(to - from).TotalDays + 1];
+            total = 0;
+            int count = 0;
+            for (DateTime i = from; i <= to; i = i.AddDays(1))
+            {
+                try
+                {
+                    var Messages = _db.ActivityLogs.
+                        Where(p => (p.MessageDateTime.Date >= i.Date) && (p.MessageDateTime.Date < i.Date.AddDays(1)));
+
+                    //if (universityFilter != "all") Users = Users.Where(n => n.SnUser.University.Name == universityFilter);
+                    if (networkFilter != "all") Messages = Messages.Where(n => n.SnUser.SocialNetwork == networkFilter);
+
+                    int numberOfMessages = Messages.Count();
+                    total += numberOfMessages;
+                    result[count++] = $"{i.Date.ToShortDateString()} : {numberOfMessages}  messages ";
+                }
+                catch (Exception e)
+                {
+                    result[count++] = $"{i.Date.ToShortDateString()} : error ocured {e.Message}  ";
+                }
+            }
+            return result;
+        }
+
+
         public string InactiveUsers(DateTime to, string universityFilter = "all", string networkFilter = "all")
         {            
             List<SnUser> users = _db.SnUsers.Where(n => (n.LastActiveDate.Date <= to.Date) ).ToList();
