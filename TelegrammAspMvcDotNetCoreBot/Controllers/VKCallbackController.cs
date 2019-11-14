@@ -65,6 +65,8 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                             // Десериализация
                             var message = Message.FromJson(new VkResponse(updates.Object));
+                            if (message == null)
+                                return Ok("ok");
 
                             var chatId = message.FromId ?? -1;
 

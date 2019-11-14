@@ -17,16 +17,22 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
         public void AddRecordInLog(long chatId, string messageText, DateTime recordDateTime)
         {
-            ActivityLog activityLog = new ActivityLog()
+            SnUser user = _db.SnUsers.FirstOrDefault(u => u.SocialNetworkId == chatId);
+            if (user != null)
             {
-                SnUser = _db.SnUsers.FirstOrDefault(u=>u.SocialNetworkId == chatId),
-                MessageText = messageText,
-                MessageDateTime = recordDateTime
-            };
-            _db.SnUsers.FirstOrDefault(u => u.SocialNetworkId == chatId).LastActiveDate = DateTime.Now;
+                ActivityLog activityLog = new ActivityLog()
+                {
+                    SnUser = _db.SnUsers.FirstOrDefault(u => u.SocialNetworkId == chatId),
+                    MessageText = messageText,
+                    MessageDateTime = recordDateTime
+                };
+            
+
+            user.LastActiveDate = DateTime.Now;
             _db.ActivityLogs.Add(activityLog);
             //_db.Update(_db.SnUsers.FirstOrDefault(u => u.SocialNetworkId == chatId));
             _db.SaveChanges();
+            }
         }
 
         public string[] GetStatistic()
