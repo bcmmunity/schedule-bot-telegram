@@ -58,10 +58,10 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             result[3] = $"Total on Telegram today {total}";
             trash = DistictUsers(DateTime.Now, DateTime.Now, out total, "all", "Vk");
             result[4] = $"Total on VK today {total}";
-            //for (int i = 0; i < universities.Count; i++)
-            //{
-            //    result[i + 6] = DistictUsers(DateTime.Now.AddDays(-7), DateTime.Now, out total, universities[i].Name);
-            //}
+            for (int i = 0; i < universities.Count; i++)
+            {
+                result[i + 6 + 8] = DistictUsers(DateTime.Now, DateTime.Now, out total, universities[i].Name)[0] + " " + universities[i].Name;
+            }
             return result;
         }
 
@@ -108,7 +108,8 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                     var Users = validUsers.GroupBy(p => p.SnUser.SnUserId).
                         Select(grp => grp.FirstOrDefault()).ToList();
 
-                    //if (universityFilter != "all") Users = Users.Where(n => n.SnUser.University.Name == universityFilter);
+                    if (universityFilter != "all")
+                        Users = Users.Where(n => n != null && n.SnUser.University.Name == universityFilter).ToList();
                     if (networkFilter != "all")
                         Users = Users.Where(n => n != null && n.SnUser.SocialNetwork == networkFilter).ToList();
 
