@@ -50,7 +50,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 result[i + 6] = week[i];
             }
             result[1] = $"Total in last 7 days {total}";
-            string[] trash = DistictUsers(DateTime.Now.AddDays(-7), DateTime.Now, out total);
+            string[] trash = DistictUsers(DateTime.Now.AddDays(-3), DateTime.Now, out total);
             result[0] = $"Total in 3 days {total}";
             trash = DistictUsers(DateTime.Now.AddDays(-14), DateTime.Now.AddDays(-7), out total);
             result[2] = $"Total last week  {total}";
@@ -152,15 +152,5 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             return  $"From {universityFilter} in {networkFilter} {userCount} users inactive since {to.Date.ToShortDateString()}";                  
         }
        
-    
-
-
-
-       /* public string NumberOfMessages(DateTime from, DateTime to, string universityFilter = "all", string networkFilter = "all")
-        {
-            List<SnUser> users = _db.SnUsers.Where(n => (n.LastActiveDate.Date <= to.Date)).ToList();
-            int userCount = users.Where(n => (universityFilter == "all" ? true : n.University.Name == universityFilter) && (networkFilter == "all" ? true : n.SocialNetwork == networkFilter)).Count();
-            return $"From {universityFilter} in {networkFilter} {userCount} users inactive since {to.Date.ToShortDateString()}";
-        }*/
     }
 }
