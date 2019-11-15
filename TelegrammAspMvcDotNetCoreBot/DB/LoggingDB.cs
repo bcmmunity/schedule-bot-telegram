@@ -50,7 +50,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 result[i + 6] = week[i];
             }
             result[1] = $"Total in last 7 days {total}";
-            string[] trash = DistictUsers(DateTime.Now.AddDays(-7), DateTime.Now, out total);
+            string[] trash = DistictUsers(DateTime.Now.AddDays(-3), DateTime.Now, out total);
             result[0] = $"Total in 3 days {total}";
             trash = DistictUsers(DateTime.Now.AddDays(-14), DateTime.Now.AddDays(-7), out total);
             result[2] = $"Total last week  {total}";
