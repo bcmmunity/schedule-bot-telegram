@@ -35,7 +35,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             }
         }
 
-        public string[] GetStatistic()
+        public string[] GetDetails()
         {
             /*int allUsersCount = _db.SnUsers.Count();
            
@@ -66,26 +66,26 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         }
 
 
-        //public string[] GetStatistic()
-        //{
+        public string[] GetStatistic()
+        {
 
-        //    int allUsersCount = _db.SnUsers.Count();
-        //    int vkUsersCount = _db.SnUsers.Count(n => n.SocialNetwork == "Vk");
-        //    int telegramUsersCount = _db.SnUsers.Count(n => n.SocialNetwork == "Telegram");
-        //    List<University> universities = _db.Universities.ToList();
+            int allUsersCount = _db.SnUsers.Count();
+            int vkUsersCount = _db.SnUsers.Count(n => n.SocialNetwork == "Vk");
+            int telegramUsersCount = _db.SnUsers.Count(n => n.SocialNetwork == "Telegram");
+            List<University> universities = _db.Universities.ToList();
 
-        //    string[] result = new string[universities.Count + 3];
-        //    result[0] = "Количество пользователей бота: " + allUsersCount;
-        //    result[1] = "Пользователи VK: " + vkUsersCount;
-        //    result[2] = "Пользователи Telegram: " + telegramUsersCount;
+            string[] result = new string[universities.Count + 3];
+            result[0] = "Количество пользователей бота: " + allUsersCount;
+            result[1] = "Пользователи VK: " + vkUsersCount;
+            result[2] = "Пользователи Telegram: " + telegramUsersCount;
 
-        //    for (int i = 3; i < result.Length; i++)
-        //    {
-        //        result[i] = "Пользователи из " + universities[i - 3].Name + ": " + _db.SnUsers.Include(n => n.University).Count(n => n.University.Name == universities[i - 3].Name);
-        //    }
-        //    return result;
+            for (int i = 3; i < result.Length; i++)
+            {
+                result[i] = "Пользователи из " + universities[i - 3].Name + ": " + _db.SnUsers.Include(n => n.University).Count(n => n.University.Name == universities[i - 3].Name);
+            }
+            return result;
 
-        //}
+        }
 
         public string[] DistictUsers(DateTime from, DateTime to, out int total, string universityFilter = "all", string networkFilter = "all")
         {
@@ -96,15 +96,23 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             {
                 try
                 {
-                    var Users = _db.ActivityLogs.
-                        Where(p => (p.MessageDateTime.Date >= i.Date) && (p.MessageDateTime.Date < i.Date.AddDays(1))).
-                        GroupBy(p => p.SnUser.SnUserId).
-                        Select(grp => grp.FirstOrDefault());
+                    var allUsers = _db.ActivityLogs.Include(u => u.SnUser).Where(p =>
+                        (p.MessageDateTime.Date >= i.Date) && (p.MessageDateTime.Date < i.Date.AddDays(1))).ToList();
+                    var validUsers = new List<ActivityLog>();
+                    foreach (var user in allUsers)
+                    {
+                        if (user.SnUser != null)
+                            validUsers.Add(user);
+                    }
+
+                    var Users = validUsers.GroupBy(p => p.SnUser.SnUserId).
+                        Select(grp => grp.FirstOrDefault()).ToList();
 
                     //if (universityFilter != "all") Users = Users.Where(n => n.SnUser.University.Name == universityFilter);
-                    if (networkFilter != "all") Users = Users.Where(n => n.SnUser.SocialNetwork == networkFilter);
+                    if (networkFilter != "all")
+                        Users = Users.Where(n => n != null && n.SnUser.SocialNetwork == networkFilter).ToList();
 
-                    int numberOfUsers = Users.Count();
+                    int numberOfUsers = Users.Count;
                     total += numberOfUsers;
                     result[count++] = $"{i.Date.ToShortDateString()} : {numberOfUsers}  Users ";
                 }

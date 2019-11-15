@@ -21,6 +21,14 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             db = context;
         }
 
+        public IActionResult Details()
+        {
+            LoggingDB log = new LoggingDB();
+            ViewBag.Statistic = log.GetDetails();
+            return View();
+        }
+
+
         public IActionResult Index()
         {
             //try
