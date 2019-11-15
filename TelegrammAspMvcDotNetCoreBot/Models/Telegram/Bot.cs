@@ -23,9 +23,9 @@ namespace TelegrammAspMvcDotNetCoreBot.Models.Telegramm
             _commandsList.Add(new StartCommand());
             //TODO: Add more commands
 
-            _botClient = new TelegramBotClient(AppSettings.Key);
+            _botClient = new TelegramBotClient(Startup.Configuration["ConfigTelegram:Key"]);
 
-			string hook = string.Format(AppSettings.Url, "api/message/update");
+			string hook = string.Format(Startup.Configuration["ConfigTelegram:Url"], "api/message/update");
             await _botClient.SetWebhookAsync(hook);
             return _botClient;
         }

@@ -56,9 +56,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
             result += ", " + GetWeekName(chatId, weekNumUse, socialNetwork) + "\n \n";
 
-            List<Lesson> listPar = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
-                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), weekNumUse, day);
+            List<Lesson> listPar = schedule.GetSchedule(chatId, socialNetwork, weekNumUse, day);
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 
@@ -203,9 +201,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             
 
-            List<Lesson> listPar = schedule.GetSchedule(userDb.CheckUserElements(chatId, "university"),
-                userDb.CheckUserElements(chatId, "facility"), userDb.CheckUserElements(chatId, "course"),
-                userDb.CheckUserElements(chatId, "group"), weekNumUse, day);
+            List<Lesson> listPar = schedule.GetSchedule(chatId, socialNetwork, weekNumUse, day);
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 

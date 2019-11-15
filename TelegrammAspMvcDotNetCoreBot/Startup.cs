@@ -22,7 +22,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             keepAliveThread.Start();
         }
 
-        public IConfiguration Configuration { get; }
+        public static IConfiguration Configuration { get; private set; }
         static Thread keepAliveThread = new Thread(KeepAlive);
 
         static void KeepAlive()
@@ -55,7 +55,7 @@ namespace TelegrammAspMvcDotNetCoreBot
             services.AddSingleton<IVkApi>(sp =>
             {
                 var api = new VkApi();
-                api.Authorize(new ApiAuthParams { AccessToken = Configuration["Config:AccessToken"] });
+                api.Authorize(new ApiAuthParams { AccessToken = Configuration["ConfigVk:AccessToken"] });
                 return api;
             });
         }

@@ -172,14 +172,15 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             }
         }
 
-        public List<Lesson> GetSchedule(string university, string facility, string course, string group, int week,
+        public List<Lesson> GetSchedule(long chatId, string socialNetwork, int week,
             int day)
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
+                int groupId = db.QueryFirstOrDefault<int>("SELECT GroupId FROM SnUsers WHERE SocialNetworkId = @chatId AND SocialNetwork = @socialNetwork", new {chatId, socialNetwork});
                 return db.Query<Lesson>(
-                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sd.ScheduleWeekId = sw.ScheduleWeekId JOIN Groups as g on g.GroupId = sw.GroupId JOIN Courses as c ON c.CourseId = g.CourseId JOIN Facilities as f ON f.FacilityId = c.FacilityId JOIN Universities as u ON u.UniversityId = f.UniversityId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE u.Name = @university and f.Name = @facility and c.Name = @course and g.Name = @group and sw.Week = @week and sd.Day = @day",
-                    new {university, facility, course, group, week, day}).ToList();
+                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sd.ScheduleWeekId = sw.ScheduleWeekId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE sw.GroupId = @groupId and sw.Week = @week and sd.Day = @day",
+                    new {groupId, week, day}).ToList();
             }
         }
 

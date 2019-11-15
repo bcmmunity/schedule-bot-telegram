@@ -52,7 +52,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                 switch (updates.Type)
                 {
                     case "confirmation":
-                        return Ok(_configuration["Config:Confirmation"]);
+                        return Ok(_configuration["ConfigVk:Confirmation"]);
 
                     case "message_new":
                         {
