@@ -58,7 +58,7 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             result[4] = $"Total on VK today {DistictUsers(DateTime.Now, DateTime.Now, "all", "Vk")}";
             for (int i = 0; i < universities.Count; i++)
             {
-                result[i + 6 + 8] = DistictUsers(DateTime.Now, DateTime.Now, universities[i].Name)[0] + " " + universities[i].Name;
+                result[i + 6 + 8] = DistictUsers(DateTime.Now, DateTime.Now, universities[i].Name) + " " + universities[i].Name;
             }
             return result;
         }
