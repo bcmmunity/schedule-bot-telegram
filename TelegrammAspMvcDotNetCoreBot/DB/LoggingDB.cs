@@ -36,31 +36,29 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         }
 
         public string[] GetDetails()
-        {
-            /*int allUsersCount = _db.SnUsers.Count();
-           
-*/
+        {     
             List<University> universities = _db.Universities.ToList();
             string[] result = new string[universities.Count + 6 + 8];
-            int total;
+
             result[5] = "Week listing";
-            string[] week = DistictUsers(DateTime.Now.AddDays(-7), DateTime.Now, out total);
+            string[] week = DistictUsersList(DateTime.Now.AddDays(-7), DateTime.Now);
             for (int i = 0; i < week.Length; i++)
             {
                 result[i + 6] = week[i];
             }
-            result[1] = $"Total in last 7 days {total}";
-            string[] trash = DistictUsers(DateTime.Now.AddDays(-3), DateTime.Now, out total);
-            result[0] = $"Total in 3 days {total}";
-            trash = DistictUsers(DateTime.Now.AddDays(-14), DateTime.Now.AddDays(-7), out total);
-            result[2] = $"Total last week  {total}";
-            trash = DistictUsers(DateTime.Now, DateTime.Now, out total, "all", "Telegram");
-            result[3] = $"Total on Telegram today {total}";
-            trash = DistictUsers(DateTime.Now, DateTime.Now, out total, "all", "Vk");
-            result[4] = $"Total on VK today {total}";
+            
+            result[0] = $"Total in 3 days {DistictUsers(DateTime.Now.AddDays(-3), DateTime.Now)}";
+
+            result[1] = $"Total in last 7 days {DistictUsers(DateTime.Now.AddDays(-7), DateTime.Now)}";
+
+            result[2] = $"Total last week  {DistictUsers(DateTime.Now.AddDays(-14), DateTime.Now.AddDays(-7))}";
+
+            result[3] = $"Total on Telegram today {DistictUsers(DateTime.Now, DateTime.Now, "all", "Telegram")}";
+
+            result[4] = $"Total on VK today {DistictUsers(DateTime.Now, DateTime.Now, "all", "Vk")}";
             for (int i = 0; i < universities.Count; i++)
             {
-                result[i + 6 + 8] = DistictUsers(DateTime.Now, DateTime.Now, out total, universities[i].Name)[0] + " " + universities[i].Name;
+                result[i + 6 + 8] = DistictUsers(DateTime.Now, DateTime.Now, universities[i].Name)[0] + " " + universities[i].Name;
             }
             return result;
         }
@@ -87,10 +85,9 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
 
         }
 
-        public string[] DistictUsers(DateTime from, DateTime to, out int total, string universityFilter = "all", string networkFilter = "all")
+        public string[] DistictUsersList(DateTime from, DateTime to, string universityFilter = "all", string networkFilter = "all")
         {
             string[] result = new string[(int)(to -from).TotalDays + 1];
-            total = 0;
             int count = 0;
             for (DateTime i = from; i <= to; i = i.AddDays(1))
             {
@@ -114,7 +111,6 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                         Users = Users.Where(n => n != null && n.SnUser.SocialNetwork == networkFilter).ToList();
 
                     int numberOfUsers = Users.Count;
-                    total += numberOfUsers;
                     result[count++] = $"{i.Date.ToShortDateString()} : {numberOfUsers}  Users ";
                 }
                 catch (Exception e)
@@ -123,6 +119,35 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
                 }
             }
             return result;
+        }
+        public string DistictUsers(DateTime from, DateTime to, string universityFilter = "all", string networkFilter = "all")
+        {
+            try
+            {
+                var allUsers = _db.ActivityLogs.Include(u => u.SnUser).Where(p =>
+                    (p.MessageDateTime.Date >= from) && (p.MessageDateTime.Date < to.AddDays(1))).ToList();
+                var validUsers = new List<ActivityLog>();
+                foreach (var user in allUsers)
+                {
+                    if (user.SnUser != null)
+                        validUsers.Add(user);
+                }
+
+                var Users = validUsers.GroupBy(p => p.SnUser.SnUserId).
+                    Select(grp => grp.FirstOrDefault()).ToList();
+
+                if (universityFilter != "all")
+                    Users = Users.Where(n => n != null && n.SnUser.University.Name == universityFilter).ToList();
+                if (networkFilter != "all")
+                    Users = Users.Where(n => n != null && n.SnUser.SocialNetwork == networkFilter).ToList();
+
+                int numberOfUsers = Users.Count;
+                return  $"{numberOfUsers} users ";
+            }
+            catch (Exception e)
+            {
+                return $"error ocured {e.Message}  ";
+            }
         }
 
 
