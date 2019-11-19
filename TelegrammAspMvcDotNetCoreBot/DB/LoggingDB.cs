@@ -125,14 +125,14 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
             try
             {
                 var allUsers = _db.ActivityLogs.Include(u => u.SnUser).Where(p =>
-                    (p.MessageDateTime.Date >= from) && (p.MessageDateTime.Date < to.AddDays(1))).ToList();
+                    (p.MessageDateTime.Date >= from.Date) && (p.MessageDateTime.Date < to.AddDays(1))).ToList();
                 var validUsers = new List<ActivityLog>();
                 foreach (var user in allUsers)
                 {
                     if (user.SnUser != null)
                         validUsers.Add(user);
                 }
-
+                
                 var Users = validUsers.GroupBy(p => p.SnUser.SnUserId).
                     Select(grp => grp.FirstOrDefault()).ToList();
 
