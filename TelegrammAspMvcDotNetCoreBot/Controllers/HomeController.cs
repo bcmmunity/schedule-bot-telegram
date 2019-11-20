@@ -9,6 +9,7 @@ using NPOI.HSSF.Record.Chart;
 using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models;
+using TelegrammAspMvcDotNetCoreBot.Logic.PythonLogic;
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
 {
@@ -28,6 +29,11 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             return View();
         }
 
+        public IActionResult Python()
+        {
+            ViewBag.Python = PythonEngine.Execute();
+            return View();
+        }
 
         public IActionResult Index()
         {

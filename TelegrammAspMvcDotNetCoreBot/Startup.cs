@@ -88,7 +88,7 @@ namespace TelegrammAspMvcDotNetCoreBot
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            Bot.GetBotClientAsync().Wait();
+            //Bot.GetBotClientAsync().Wait();
         }
     }
 }
