@@ -9,6 +9,7 @@ using NPOI.HSSF.Record.Chart;
 using TelegrammAspMvcDotNetCoreBot.DB;
 using TelegrammAspMvcDotNetCoreBot.Logic;
 using TelegrammAspMvcDotNetCoreBot.Models;
+using TelegrammAspMvcDotNetCoreBot.
 
 namespace TelegrammAspMvcDotNetCoreBot.Controllers
 {
@@ -130,6 +131,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             //}
             LoggingDB log = new LoggingDB();
             ViewBag.Statistic = log.GetStatistic();
+            ViewBag.Python = PythonScriptHandler.PythonRunner(new Dictionary<string, object> {{ "a", 1 }, {"b", 10 }}, ) ;
             return View();
         }
 
