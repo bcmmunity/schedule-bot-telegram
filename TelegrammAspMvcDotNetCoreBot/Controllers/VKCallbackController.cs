@@ -9,6 +9,7 @@ using TelegrammAspMvcDotNetCoreBot.Models;
 using TelegrammAspMvcDotNetCoreBot.Models.VK;
 using VkNet.Abstractions;
 using VkNet.Model;
+using VkNet.Model.Attachments;
 using VkNet.Model.RequestParams;
 using VkNet.Utils;
 
@@ -191,11 +192,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             if (!userDb.CheckUser(chatId) || message.Text == "Начать")
                             {
                                 string[][] universities = response.UniversitiesArray(chatId);
+                                List<MediaAttachment> universityAttachments = new List<MediaAttachment>(); 
+                                universityAttachments.Add(new Photo
+                                {
+                                    OwnerId = -182016108,
+                                    Id = 457239025
+                                });
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
+                                    Attachments = universityAttachments,
+                                    // Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
                                     Keyboard = keyboard.GetKeyboard(universities,"universities")
                                 });
                                 return Ok("ok");
@@ -390,11 +398,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 mode.HWSwitch(chatId,false);
                                 mode.TeacherScheduleSwitch(chatId,false);
                                 string[][] universities = response.UniversitiesArray(chatId);
+                                List<MediaAttachment> universityAttachments = new List<MediaAttachment>();
+                                universityAttachments.Add(new Photo
+                                {
+                                    OwnerId = -182016108,
+                                    Id = 457239025
+                                });
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
+                                    Attachments = universityAttachments,
+                                    //Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
                                     Keyboard = keyboard.GetKeyboard(universities,"universities")
                                 });
                                 return Ok("ok");
@@ -406,12 +421,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                             scheduleDb.IsUniversityExist(message.Text))
                             {
                                 string[][] facilities = response.FacilitiesArray(chatId, message.Text);
-
+                                List<MediaAttachment> facilityAttachments = new List<MediaAttachment>();
+                                facilityAttachments.Add(new Photo
+                                {
+                                    OwnerId = -182016108,
+                                    Id = 457239024
+                                });
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Теперь выбери факультет",
+                                    Attachments = facilityAttachments,
+                                 //   Message = "Теперь выбери факультет",
                                     Keyboard = keyboard.GetKeyboard(facilities,"facilities", message.Text)
                                 });
 
@@ -429,24 +450,31 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                 return Ok("ok");
                             }
 
-                                if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "facility")) &&
+                            if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "facility")) &&
                                 scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"), message.Text))
                             {
                                 string[][] courses = response.CoursesArray(chatId, message.Text);
+                                List<MediaAttachment> courseAttachments = new List<MediaAttachment>();
+                                courseAttachments.Add(new Photo
+                                {
+                                    OwnerId = -182016108,
+                                    Id = 457239023
+                                });
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Теперь выбери курс",
+                                    Attachments = courseAttachments,
+                                   // Message = "Теперь выбери курс",
                                     Keyboard = keyboard.GetKeyboard(courses,"courses", message.Text)
                                 });
 
                                 return Ok("ok");
                             }
-                                else if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "facility")) &&
+                            else if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "facility")) &&
                                          !scheduleDb.IsFacilityExist(userDb.CheckUserElements(chatId, "university"),
                                              message.Text))
-                                {
+                                 {
                                     _vkApi.Messages.Send(new MessagesSendParams
                                     {
                                         RandomId = new DateTime().Millisecond,
@@ -454,19 +482,25 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         Message = "Неправильный ввод! Попробуй еще раз"
                                     });
                                     return Ok("ok");
-                            }
-                                if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "course")) && scheduleDb.IsCourseExist(
+                                 }
+                            if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "course")) && scheduleDb.IsCourseExist(
                                     userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     message.Text))
                             {
                                 string[][] groups = response.GroupsArray(chatId, message.Text);
-
+                                List<MediaAttachment> groupAttachments = new List<MediaAttachment>();
+                                groupAttachments.Add(new Photo
+                                {
+                                    OwnerId = -182016108,
+                                    Id = 457239027
+                                });
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Теперь выбери группу",
+                                    Attachments = groupAttachments,
+                                   // Message = "Теперь выбери группу",
                                     Keyboard = keyboard.GetKeyboard(groups,"groups", message.Text)
                                 });
 
@@ -476,7 +510,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                          userDb.CheckUserElements(chatId, "university"),
                                          userDb.CheckUserElements(chatId, "facility"),
                                          message.Text))
-                                {
+                                 {
                                     _vkApi.Messages.Send(new MessagesSendParams
                                     {
                                         RandomId = new DateTime().Millisecond,
@@ -484,19 +518,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         Message = "Неправильный ввод! Попробуй еще раз"
                                     });
                                     return Ok("ok");
-                            }
+                                 }
 
-                                if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")) && scheduleDb.IsGroupExist(
+                            if (String.IsNullOrEmpty(userDb.CheckUserElements(chatId, "group")) && scheduleDb.IsGroupExist(
                                     userDb.CheckUserElements(chatId, "university"),
                                     userDb.CheckUserElements(chatId, "facility"),
                                     userDb.CheckUserElements(chatId, "course"), message.Text))
                             {
                                 response.LetsWork(chatId, message.Text);
+                                List<MediaAttachment> doneAttachments = new List<MediaAttachment>();
+                                doneAttachments.Add(new Photo
+                                {
+                                    OwnerId = -182016108,
+                                    Id = 457239022
+                                });
                                 _vkApi.Messages.Send(new MessagesSendParams
                                 {
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
-                                    Message = "Отлично, можем работать!",
+                                    Attachments = doneAttachments,
+                                    //Message = "Отлично, можем работать!",
                                     Keyboard = response.VkMainKeyboard
                                 });
 
@@ -529,16 +570,24 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                         Keyboard = response.VkMainKeyboard
                                     });
                                 else
+                                {
+                                    List<MediaAttachment> noLessonsAttachments = new List<MediaAttachment>();
+                                    noLessonsAttachments.Add(new Photo
+                                    {
+                                        OwnerId = -182016108,
+                                        Id = 457239026
+                                    });
                                     _vkApi.Messages.Send(new MessagesSendParams
                                     {
                                         RandomId = new DateTime().Millisecond,
                                         PeerId = message.PeerId.Value,
-                                        Message = "Пар нет",
+                                        Attachments = noLessonsAttachments,
+                                        //Message = "Пар нет",
                                         Keyboard = response.VkMainKeyboard
                                     });
+                                }
 
 
-                                
                                 return Ok("ok");
 
                             }
@@ -560,11 +609,18 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
 
                                 else
                                 {
+                                    List<MediaAttachment> noLessonsAttachments = new List<MediaAttachment>();
+                                    noLessonsAttachments.Add(new Photo
+                                    {
+                                        OwnerId = -182016108,
+                                        Id = 457239026
+                                    });
                                     _vkApi.Messages.Send(new MessagesSendParams
                                     {
                                         RandomId = new DateTime().Millisecond,
                                         PeerId = message.PeerId.Value,
-                                        Message = "Пар нет",
+                                        Attachments = noLessonsAttachments,
+                                        //Message = "Пар нет",
                                         Keyboard = response.VkMainKeyboard
                                     });
                                 }
