@@ -28,6 +28,12 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             return View();
         }
 
+        public IActionResult PythonTest()
+        {
+            ViewBag.Test = PythonScriptHandler.PythonRunner( @"C:\Users\Алексей\source\repos\bcmmunity\schedule-bot-telegram\TelegrammAspMvcDotNetCoreBot\Properties\PythonScripts\TestScript.py", new string[]{ "a", "b"});
+            return View();
+        }
+
 
         public IActionResult Index()
         {
@@ -117,17 +123,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
             //            db.SaveChanges();
             //        }
             //    }
-
-
-
-
-
             //}
             //catch (Exception e)
             //{
             //    ViewBag.Statistic += e.Message;
             //    ViewBag.Statistic += e.InnerException?.Message;
             //}
+
             LoggingDB log = new LoggingDB();
             ViewBag.Statistic = log.GetStatistic();
             return View();
