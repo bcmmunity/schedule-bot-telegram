@@ -203,7 +203,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Attachments = universityAttachments,
-                                    // Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
+                                    Message = "Для выбора используй кнопки снизу.",
                                     Keyboard = keyboard.GetKeyboard(universities,"universities")
                                 });
                                 return Ok("ok");
@@ -409,7 +409,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Controllers
                                     RandomId = new DateTime().Millisecond,
                                     PeerId = message.PeerId.Value,
                                     Attachments = universityAttachments,
-                                    //Message = "Привет, выбери свой университет\nДля выбора используй кнопки снизу.",
+                                    Message = "Для выбора используй кнопки снизу.",
                                     Keyboard = keyboard.GetKeyboard(universities,"universities")
                                 });
                                 return Ok("ok");

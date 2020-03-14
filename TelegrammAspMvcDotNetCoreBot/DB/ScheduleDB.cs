@@ -173,11 +173,17 @@ namespace TelegrammAspMvcDotNetCoreBot.DB
         }
 
         public List<Lesson> GetSchedule(long chatId, string socialNetwork, int week,
-            int day)
+            int day, DateTime date)
         {
             using (IDbConnection db = new SqlConnection(connectionString))
             {
-                int groupId = db.QueryFirstOrDefault<int>("SELECT GroupId FROM SnUsers WHERE SocialNetworkId = @chatId AND SocialNetwork = @socialNetwork", new {chatId, socialNetwork});
+                int groupId = db.QueryFirstOrDefault<int>("SELECT GroupId FROM SnUsers WHERE SocialNetworkId = @chatId AND SocialNetwork = @socialNetwork", new { chatId, socialNetwork });
+                List<Lesson> lessons = db.Query<Lesson>(
+                    "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sd.ScheduleWeekId = sw.ScheduleWeekId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE sw.GroupId = @groupId and sd.Date = @date",
+                    new { groupId, week, date }).ToList();
+                if (lessons.Count != 0)
+                    return lessons;
+
                 return db.Query<Lesson>(
                     "SELECT l.* FROM ScheduleDays as sd JOIN ScheduleWeeks as sw on sd.ScheduleWeekId = sw.ScheduleWeekId JOIN Lessons as l on l.ScheduleDayId = sd.ScheduleDayId WHERE sw.GroupId = @groupId and sw.Week = @week and sd.Day = @day",
                     new {groupId, week, day}).ToList();

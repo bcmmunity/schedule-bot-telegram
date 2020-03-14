@@ -23,7 +23,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             ScheduleDB schedule = new ScheduleDB();
             byte scheduleType = userDb.GetUserScheduleType(chatId);
             var weekNumUse = 0;
-            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+            int semestrShift = GetSemestrNumber(); //сдвиг отсчета недель
             if (buttons == false)
             {
                 
@@ -34,7 +34,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 {
                     int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                          CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
-                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow);
 
                 }
                 else if (scheduleType == 2)
@@ -44,7 +44,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 else
                 {
                     int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - semestrShift;
 
                     weekNumUse = weekNum == 1 ? weekNumNow : weekNumNow + 1;
                 }
@@ -56,7 +56,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             string result = "Расписание на " + ConvertWeekDayToRussian(day);
             result += ", " + GetWeekName(chatId, weekNumUse, socialNetwork) + "\n \n";
 
-            List<Lesson> listPar = schedule.GetSchedule(chatId, socialNetwork, weekNumUse, day);
+            List<Lesson> listPar = schedule.GetSchedule(chatId, socialNetwork, weekNumUse, day, GetDateFromWeekAndDay(weekNumUse,day));
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 
@@ -83,7 +83,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
                     weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - semestrShift, socialNetwork);
 
                 result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
@@ -104,7 +104,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             ScheduleDB schedule = new ScheduleDB();
 
             byte scheduleType = userDb.GetUserScheduleType(chatId);
-            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+            int semestrShift = GetSemestrNumber(); //сдвиг отсчета недель
 
             if (scheduleType == 1)
                 weekNum = 1;
@@ -112,13 +112,13 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             {
                 int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                      CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
-                weekNum = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+                weekNum = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow);
 
             }
             else if (scheduleType != 2)
             {
                 int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                     CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+                                     CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - semestrShift;
 
                 weekNum = weekNum == 1 ? weekNumNow : weekNumNow + 1;
             }
@@ -154,7 +154,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                                   CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
                     weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - semestrShift, socialNetwork);
                 result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
             }
@@ -174,7 +174,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             ScheduleDB schedule = new ScheduleDB();
             byte scheduleType = userDb.GetUserScheduleType(chatId);
             var weekNumUse = 0;
-            int septemberTheFirstWeek = 35; //35 - неделя на которой было 2 сентября
+            int semestrShift = GetSemestrNumber(); //сдвиг отсчета недель
 
             if (scheduleType == 1)
                     weekNumUse = 1;
@@ -182,7 +182,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 {
                     int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                                          CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
-                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow + 1);
+                    weekNumUse = weekNum == 1 ? weekNumNow : (weekNumNow == scheduleType ? 1 : weekNumNow);
 
                 }
                 else if (scheduleType == 2)
@@ -192,7 +192,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                 else
                 {
                     int weekNumNow = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
+                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - semestrShift;
 
                     weekNumUse = weekNum == 1 ? weekNumNow : weekNumNow + 1;
                 }
@@ -201,7 +201,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
 
             
 
-            List<Lesson> listPar = schedule.GetSchedule(chatId, socialNetwork, weekNumUse, day);
+            List<Lesson> listPar = schedule.GetSchedule(chatId, socialNetwork, weekNumUse, day, GetDateFromWeekAndDay(weekNumUse, day));
             LessonIComparer<Lesson> comparer = new LessonIComparer<Lesson>();
             listPar.Sort(comparer);
 
@@ -238,7 +238,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                                                         CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1, socialNetwork);
                 else
                     weekNumNow = GetWeekNum(chatId, ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek, socialNetwork);
+                                                        CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - semestrShift, socialNetwork);
                 result += "\nСейчас идет " + GetWeekName(chatId, weekNumNow, socialNetwork);
                 return result;
             }
@@ -384,6 +384,26 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
                     return "Десятая";
                 default:
                     return "";
+            }
+        }
+
+        private DateTime GetDateFromWeekAndDay(int weekNumber, int day)
+        {
+            int currentYear = DateTime.Now.Year; // вычисляем текущий год
+            var startDate = new DateTime(currentYear, 1, 4); // вычисляем опорную дату — 4 января текущего года (почему, читать тут http://planetcalc.ru/1252/)
+            int offsetToFirstMonday = startDate.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)startDate.DayOfWeek - 1; // смещение к понедельнику первой недели текущего года, в днях
+            int offsetToDemandedMonday = -offsetToFirstMonday + 7 * (weekNumber - 1); // смещение к искомому понедельнику, в днях
+            var mondayOfTheGivenWeek = startDate + new TimeSpan(offsetToDemandedMonday, 0, 0, 0); // вычисляем дату искомого понедельника
+            return mondayOfTheGivenWeek + new TimeSpan(day - 1,0,0,0);
+        }
+
+        private int GetSemestrNumber()
+        {
+            if (DateTime.Now.Month >= 7) //1 учебный семестр
+                return 35; //35 - неделя на которой было 2 сентября -1
+            else //2 учебный семестр
+            {
+                return 6; //6 - неделя на которой начался второй семестр -1
             }
         }
     }

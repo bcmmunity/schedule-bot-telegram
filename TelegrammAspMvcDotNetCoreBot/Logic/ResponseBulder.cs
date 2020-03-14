@@ -242,7 +242,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             if (scheduleType == 2)
             {
                 int weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2 + 1;
+                                  CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % 2;
             
                 if (DateTime.Now.DayOfWeek == 0)
                 {
@@ -335,7 +335,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             int weekNum;
             if (scheduleType != 0)
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType +1;
+                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType;
             else
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek; 
@@ -362,7 +362,7 @@ namespace TelegrammAspMvcDotNetCoreBot.Logic
             int weekNum;
             if (scheduleType != 0)
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
-                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType + 1;
+                              CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) % scheduleType;
             else
                 weekNum = ((CultureInfo.CurrentCulture).Calendar.GetWeekOfYear(DateTime.Now,
                               CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday)) - septemberTheFirstWeek;
